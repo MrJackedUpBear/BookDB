@@ -280,6 +280,7 @@ class _MyHomePageState extends State<MyHomePage> {
   static const _headingFontSize = 40.0;
   static const _subHeadingFontSize = 25.0;
   static const _bookFontSize = 20.0;
+  static const _menuButtonSize = Size(246, 53);
 
   //Some text editing controllers that allow me to get the text entered from the filter menu.
   static final TextEditingController _authorTextController = TextEditingController();
@@ -459,14 +460,17 @@ class _MyHomePageState extends State<MyHomePage> {
 
     }
 
+    //sorts the values by comparing the values to each other.
     values.sort((a, b) => a._getValue().compareTo(b._getValue()));
 
+    //Searches for the target and stores the values returned in the values object
     values = _search(values, target);
 
+    //Creates a list of final indices to keep track of indices that matched the target
     List<int> finalIndices = [];
 
-    //Need to optimize this. No reason to create a
-    //log(n) search method just to do an n^2 method...
+    //This iterates through the filtered books and the values to add the proper final indices to the final indices list.
+    //TODO: Need to optimize this. No reason to create a log(n) search method just to do a n^2 method...
     for (int i = 0; i < filteredBooks.length; i++){
       for (int j = 0; j < values.length; j++){
         if (values[j]._getIndex() == i){
@@ -475,71 +479,88 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
 
+    //Creates a temporary list of books
     List<Book> temp = [];
+
+    //Adds the books to the temporary list of books that matched the target value.
     for (int i = 0; i < finalIndices.length; i++){
       temp.add(filteredBooks[finalIndices[i]]);
     }
 
+    //Runs the set state command to refresh the page and set the filtered books to the temporary variable.
     setState(() {
       filteredBooks = temp;
     });
   }
-  
+
+  //This is called to start the filtering from the submit button.
   void _filter(){
+    //Creates a filter object.
     Filter filter = Filter();
 
+    //Shows the clear filter button on the main page.
     setState(() {
       _showClearFilterButton = true;
     });
 
+    //Checks if the personal library button was checked. If so, it filters out books that are not included in that filter.
     if (_personalLibrary){
       filter._addUserText(user._getUser());
       _filterOut(filter);
-    }else{
+    }
+    //If the personal library button is not checked, restore filtered books to its original list.
+    else{
       filteredBooks = books;
     }
 
+    //Checks if the user left any input in the author filter text button and filters by that text.
     if (_authorTextController.text.trim().isNotEmpty){
        filter._addAuthorText(_authorTextController.text);
       _filterOut(filter);
     }
 
+    //Checks if the author sort arrows are changed to sort upward or downward.
     if (authorSort < 0){
       filteredBooks.sort((a, b) => a.getAuthor().compareTo(b.getAuthor()));
     }else if (authorSort > 0){
       filteredBooks.sort((a, b) => b.getAuthor().compareTo(a.getAuthor()));
     }
 
+    //Checks if the user left any input in the title filter text button and filters by that text.
     if (_titleTextController.text.trim().isNotEmpty){
       filter._addTitleText(_titleTextController.text);
       _filterOut(filter);
     }
 
+    //Checks if the title sort arrows are changed to sort upward or downward.
     if (titleSort < 0){
       filteredBooks.sort((a, b) => a.getTitle().compareTo(b.getTitle()));
     }else if (titleSort > 0){
       filteredBooks.sort((a, b) => b.getTitle().compareTo(a.getTitle()));
     }
 
+    //Checks if the user left any input in the genre filter text button and filters by that text.
     if (_genreTextController.text.trim().isNotEmpty){
       filter._addGenreText(_genreTextController.text);
       _filterOut(filter);
     }
 
+    //Checks if the genre sort arrows are changed to sort upward or downward.
     if (genreSort < 0){
       filteredBooks.sort((a, b) => a.getGenre().compareTo(b.getGenre()));
     }else if (genreSort > 0){
       filteredBooks.sort((a, b) => b.getGenre().compareTo(a.getGenre()));
     }
 
+    //Checks if the review sort arrows are changed to sort upward or downward.
     if (reviewSort < 0){
       filteredBooks.sort((a, b) => a.getReviewAverage().compareTo(b.getReviewAverage()));
     }else if (reviewSort > 0){
       filteredBooks.sort((a, b) => b.getReviewAverage().compareTo(a.getReviewAverage()));
     }
 
-    //Possibly will run this at the end to clear all inputs from
-    //the filter pull-out menu
+    //Checks to make sure nothing has been changed in the filter option.
+    //If so, it will clear all filter inputs and restore the original list of books.
     if (_genreTextController.text.trim().isEmpty
     && _authorTextController.text.trim().isEmpty
     && _titleTextController.text.trim().isEmpty
@@ -569,8 +590,10 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  //This is the main build widget that contains all the main page display.
   @override
   Widget build(BuildContext context) {
+    //Creates the title with the current user's name.
     String title = widget.title;
     title += " - ${user._getUser()}";
 
@@ -713,7 +736,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.zero,
                     ),
-                    minimumSize: Size(246, 53),
+                    minimumSize: _menuButtonSize,
                   ),
 
                   //Button logic when it's pressed
@@ -748,7 +771,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.zero,
                     ),
-                    minimumSize: Size(246, 53),
+                    minimumSize: _menuButtonSize,
                   ),
                   onPressed: (){
 
@@ -779,7 +802,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.zero,
                     ),
-                    minimumSize: Size(246, 53),
+                    minimumSize: _menuButtonSize,
                   ),
                   onPressed: (){
 
@@ -857,6 +880,7 @@ class _MyHomePageState extends State<MyHomePage> {
               children: <Widget>[
                 //Filter By: text
                 Text(
+                  //sets the filter by text, the font weight, size, and color
                   "Filter By:",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -867,8 +891,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
                 //My Library Filtering
                 Row(
+                  //Makes sure the size of the row is small enough to still center properly
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
+                    //Personal library text with font size and color
                     Text(
                       "Personal Library",
                       style: TextStyle(
@@ -876,7 +902,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         color: _invertColor(_defaultPageColor),
                       ),
                     ),
+                    //Checkbox for the personal library
                     Checkbox(
+                      //If the value changes, then make sure the value is not null then assign personal livrary to the value.
                       value: _personalLibrary,
                       onChanged: (bool? value){
                         setState(() {
@@ -895,6 +923,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: <Widget>[
                     //Author text
                     Text(
+                      //Sets the text, font size, font weight, and color of the text.
                       "Author",
                       style: TextStyle(
                         fontSize: _subHeadingFontSize,
@@ -905,10 +934,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
                     //Author arrow buttons
                     IconButton(
+                      //Resets the other filtering arrows
                       onPressed: (){
                         titleSort = 0;
                         genreSort = 0;
                         reviewSort = 0;
+
+                        //Checks if the author sort is currently zero, if so it alternates from -1 to 1, to 0 again and again.
                         if (authorSort == 0){
                           setState(() {
                             authorSort = -1;
@@ -926,6 +958,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       icon: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
+                          //Displays two arrows if the sort is 0, shows one arrow if the sort is greater than 0, and shows the opposite arrow when sort is less than 0
                           if (authorSort == 0)
                             Row(
                               children: [
@@ -948,11 +981,13 @@ class _MyHomePageState extends State<MyHomePage> {
                     controller: _authorTextController,
                     decoration: InputDecoration(
                       hint: Text(
+                        //Sets the text and font size.
                         "Enter author...",
                         style: TextStyle(
                           fontSize: _subHeadingFontSize,
                         ),
                       ),
+                      //fills the text field with the color white, sets the borded to the specified color with the specified width.
                       filled: true,
                       fillColor: Colors.white,
                       enabledBorder: OutlineInputBorder(
@@ -974,6 +1009,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: <Widget>[
                       //Author text
                       Text(
+                        //Sets the text, font size, font weight, and color of the text.
                         "Book Title",
                         style: TextStyle(
                           fontSize: _subHeadingFontSize,
@@ -985,9 +1021,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       //Author arrow buttons
                       IconButton(
                           onPressed: (){
+                            //Resets the other filtering arrows
                             authorSort = 0;
                             genreSort = 0;
                             reviewSort = 0;
+
+                            //Checks if the title sort is currently zero, if so it alternates from -1 to 1, to 0 again and again.
                             if (titleSort == 0){
                               setState(() {
                                 titleSort = -1;
@@ -1005,6 +1044,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           icon: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
+                                //Displays two arrows if the sort is 0, shows one arrow if the sort is greater than 0, and shows the opposite arrow when sort is less than 0
                                 if (titleSort == 0)
                                   Row(
                                     children: [
@@ -1027,11 +1067,13 @@ class _MyHomePageState extends State<MyHomePage> {
                     controller: _titleTextController,
                     decoration: InputDecoration(
                       hint: Text(
+                        //Sets the text and font size.
                         "Enter book title...",
                         style: TextStyle(
                           fontSize: _subHeadingFontSize,
                         ),
                       ),
+                      //fills the text field with the color white, sets the borded to the specified color with the specified width.
                       filled: true,
                       fillColor: Colors.white,
                       enabledBorder: OutlineInputBorder(
@@ -1053,6 +1095,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: <Widget>[
                       //Author text
                       Text(
+                        //Sets the text, font size, font weight, and color of the text.
                         "Genre",
                         style: TextStyle(
                           fontSize: _subHeadingFontSize,
@@ -1064,9 +1107,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       //Author arrow buttons
                       IconButton(
                           onPressed: (){
+                            //Resets the other filtering arrows
                             titleSort = 0;
                             authorSort = 0;
                             reviewSort = 0;
+
+                            //Checks if the genre sort is currently zero, if so it alternates from -1 to 1, to 0 again and again.
                             if(genreSort == 0){
                               setState(() {
                                 genreSort = -1;
@@ -1084,6 +1130,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           icon: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
+                                //Displays two arrows if the sort is 0, shows one arrow if the sort is greater than 0, and shows the opposite arrow when sort is less than 0
                                 if (genreSort == 0)
                                   Row(
                                     children: [
@@ -1105,6 +1152,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: TextField(
                     controller: _genreTextController,
                     decoration: InputDecoration(
+                      //fills the text field with the color white, sets the borded to the specified color with the specified width.
                       filled: true,
                       fillColor: Colors.white,
                       enabledBorder: OutlineInputBorder(
@@ -1114,6 +1162,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
                       hint: Text(
+                        //Sets the text and font size.
                         "Enter genre...",
                         style: TextStyle(
                           fontSize: _subHeadingFontSize,
@@ -1132,6 +1181,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: <Widget>[
                       //Author text
                       Text(
+                        //Sets the text, font size, font weight, and color of the text.
                         "Reviews",
                         style: TextStyle(
                           fontSize: _subHeadingFontSize,
@@ -1143,9 +1193,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       //Author arrow buttons
                       IconButton(
                           onPressed: (){
+                            //Resets the other filtering arrows
                             titleSort = 0;
                             genreSort = 0;
                             authorSort = 0;
+
+                            //Checks if the review sort is currently zero, if so it alternates from -1 to 1, to 0 again and again.
                             if (reviewSort == 0){
                               setState(() {
                                 reviewSort = -1;
@@ -1163,6 +1216,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           icon: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
+                                //Displays two arrows if the sort is 0, shows one arrow if the sort is greater than 0, and shows the opposite arrow when sort is less than 0
                                 if (reviewSort == 0)
                                   Row(
                                     children: [
@@ -1183,9 +1237,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 //Submit button to start filtering
                 ElevatedButton(
                   onPressed: (){
+                    //Starts filtering and closes the filter menu.
                     _filter();
                     Navigator.pop(context);
                   },
+                  //Sets the color of the button, the size of the button, and removes the rounding.
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFFDDB892),
                     minimumSize: _minButtonSize,
@@ -1194,6 +1250,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                   child: Text(
+                    //Sets the button's text, color, and font size.
                     "Submit",
                     style: TextStyle(
                       color: Colors.black,
