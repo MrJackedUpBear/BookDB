@@ -407,25 +407,33 @@ class _MyHomePageState extends State<MyHomePage> {
     return foundValues;
   }
 
+  //filter out function to start the filtering process. Takes in a filter object 
   void _filterOut(Filter controller){
+    //Initializes a filter object
     Filter filter = Filter();
 
+    //gets the text from the filter object passed and stores it as text
     String text = controller._text();
 
+    //Gets the type from the text from the first space.
     String type = text.split(" ")[0];
 
+    //Gets the rest of the text into a list of string and stores the first part in target.
     List<String> t = text.split(" ");
 
     String target = t[1];
 
+    //iterates through the length of t and adds the value of t to target
     for (int i = 2; i < t.length; i++){
       target += " ${t[i]}";
     }
 
+    //Creates a list of values to keep track of.
     List<ValueMap> values = [];
 
     type += " ";
 
+    //Checks if the type is an author, title, genre, or user type and adds all of the corresponding values to the values variable above.
     if (type.contains(filter._getAuthorText())){
       for (int i = 0; i < filteredBooks.length; i++){
         values.add(ValueMap(i, filteredBooks[i].getAuthor()));
@@ -446,6 +454,7 @@ class _MyHomePageState extends State<MyHomePage> {
         values.add(ValueMap(i, filteredBooks[i].getOwner()));
       }
     }
+    //Will work with later.
     else{
 
     }
