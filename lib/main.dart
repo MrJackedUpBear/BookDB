@@ -1,10 +1,22 @@
 import 'package:flutter/material.dart';
+import 'BookInfo.dart';
+
+//Some constant variables to ensure easy and proper sizing and colors.
+const filterBoxSize = 250.0;
+const boxSpacing = 40.0;
+const defaultPageColor = Color(0xFFEDE0D4);
+const minButtonSize = Size(50, 50);
+const headingFontSize = 40.0;
+const subHeadingFontSize = 25.0;
+const bookFontSize = 20.0;
+const menuButtonSize = Size(246, 53);
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  static const title = "Book DB";
   const MyApp({super.key});
 
   // root of the application
@@ -17,7 +29,10 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFF7F5539)),
       ),
       //sets the home page by calling MyHomePage widget with the title.
-      home: const MyHomePage(title: 'Book DB'),
+      home: const MyHomePage(title: title),
+      routes: {
+
+      },
     );
   }
 }
@@ -36,7 +51,7 @@ class MyHomePage extends StatefulWidget {
 
 //Review class to hold different review information for a book.
 class Review{
-  //intitialized the title, description, and rating for the review
+  //Initialized the title, description, and rating for the review
   var title = "";
   var description = "";
   var rating = 0.0;
@@ -272,16 +287,6 @@ class _MyHomePageState extends State<MyHomePage> {
   //This list of colors keeps track of the different color of books on the main page. Allows for alternating between these three books.
   List<Color> bookColors = [Color(0xFF9C6644), Color(0xFF7F5539), Color(0xFFB08968)];
 
-  //Some constant variables to ensure easy and proper sizing and colors.
-  static const _filterBoxSize = 250.0;
-  static const _boxSpacing = 40.0;
-  static const _defaultPageColor = Color(0xFFEDE0D4);
-  static const _minButtonSize = Size(50, 50);
-  static const _headingFontSize = 40.0;
-  static const _subHeadingFontSize = 25.0;
-  static const _bookFontSize = 20.0;
-  static const _menuButtonSize = Size(246, 53);
-
   //Some text editing controllers that allow me to get the text entered from the filter menu.
   static final TextEditingController _authorTextController = TextEditingController();
   static final TextEditingController _titleTextController = TextEditingController();
@@ -305,8 +310,8 @@ class _MyHomePageState extends State<MyHomePage> {
   //generates a temporary list of books for testing
   //TODO: change this to only include books gotten from an API call to the local database.
   late List<Book> books = [
-    Book("Super long title that probably won't fit on the thingamabob", "", "", "", "", "", "Jo"),
-    Book("Harry Potter and the Sorcerer's Stone", "Fantasy", "J. K. Rowling", "", "", "", "Jim"),
+    Book("Super long title that probably won't fit on the thingamabob", "", "", "", "Unavailable", "", "Jo"),
+    Book("Harry Potter and the Sorcerer's Stone", "Fantasy", "J. K. Rowling", "This is a harry potter book.", "Available", "", "Jim"),
     Book("Harry Potter and the Prisoner of Azkaban", "Fantasy", "J. K. Rowling", "", "", "", "Bob"),
     Book("Title3", "", "a", "", "", "", "Jo"),
     Book("Title4", "", "b", "", "", "", "Jim"),
@@ -337,7 +342,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return Color.fromARGB((color.a * 255).round(), r, g, b);
   }
 
-  //searchs through the list of valuemaps given to find the target given.
+  //searches through the list of valuemaps given to find the target given.
+  //O(N) time complexity
   List<ValueMap> _search(List<ValueMap> values, String target){
     //initializes the low and high values
     //These are necessary for binary search.
@@ -409,6 +415,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   //filter out function to start the filtering process. Takes in a filter object 
+  //O(N) time complexity
   void _filterOut(Filter controller){
     //Initializes a filter object
     Filter filter = Filter();
@@ -466,25 +473,12 @@ class _MyHomePageState extends State<MyHomePage> {
     //Searches for the target and stores the values returned in the values object
     values = _search(values, target);
 
-    //Creates a list of final indices to keep track of indices that matched the target
-    List<int> finalIndices = [];
-
-    //This iterates through the filtered books and the values to add the proper final indices to the final indices list.
-    //TODO: Need to optimize this. No reason to create a log(n) search method just to do a n^2 method...
-    for (int i = 0; i < filteredBooks.length; i++){
-      for (int j = 0; j < values.length; j++){
-        if (values[j]._getIndex() == i){
-          finalIndices.add(i);
-        }
-      }
-    }
-
     //Creates a temporary list of books
     List<Book> temp = [];
 
     //Adds the books to the temporary list of books that matched the target value.
-    for (int i = 0; i < finalIndices.length; i++){
-      temp.add(filteredBooks[finalIndices[i]]);
+    for (int i = 0; i < values.length; i++){
+      temp.add(filteredBooks[values[i]._getIndex()]);
     }
 
     //Runs the set state command to refresh the page and set the filtered books to the temporary variable.
@@ -671,158 +665,7 @@ class _MyHomePageState extends State<MyHomePage> {
       //left-hand side drawer or the hamburger menu drawer
       drawer: Drawer(
         //Lists all items in the menu.
-        child: Scaffold(
-          backgroundColor: _defaultPageColor,
-          //Top-level menu for the pull-out menu
-          appBar: AppBar(
-            //Sets the color of the title and color of the appbar
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            //Hamburger menu button
-            leading:Container(
-              //Sets the color and corner radius of the
-              //hamburger menu button
-              decoration: BoxDecoration(
-                color: Color(0xFFD9D9D9),
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              //Sets the on pressed behavior to close the pull-out
-              //menu and sets the icon to be the hamburger menu
-              //icon
-              child: IconButton(
-                onPressed: (){
-                  Navigator.pop(context);
-                },
-                icon: Icon(Icons.menu),
-              ),
-            ),
-
-            //The pull-out menu title
-            title: Center(
-              //Gets the title set from the first method.
-              child: Text(
-                  title,
-                  //Sets the color and font size of the title.
-                  style:TextStyle(
-                      color: Color(0xFFE6CCB2),
-                      fontSize: 24
-                  )
-              )
-            ),
-          ),
-          //Everything else
-          body: SizedBox(
-            //Ensures the width is taking up the entire area
-            //This is done to ensure proper centering of the
-            //elements on the screen
-            width: double.infinity,
-
-            //Column element to add the buttons on top of each
-            //other
-            //This contains the view books, scan barcode,
-            // and add book buttons.
-            child: Column(
-              //Children element to hold multiple widgets
-              children: <Widget>[
-                //Spacer element for aesthetics
-                const SizedBox(height: _boxSpacing),
-
-                //View Books button
-                TextButton(
-                  //Sets the background color, makes the
-                  //buttons not round, and ensures they are
-                  //all the same size.
-                  style: TextButton.styleFrom(
-                    backgroundColor: Color(0xFF9C6644),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
-                    ),
-                    minimumSize: _menuButtonSize,
-                  ),
-
-                  //Button logic when it's pressed
-                  onPressed: (){
-
-                  },
-
-                  //The text on the button
-                  child: Text(
-                    "View Books",
-
-                    //This sets the font size, weight, and color
-                    //of the text on the button.
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF000000),
-                    ),
-                  ),
-                ),
-
-                //Spacer element for aesthetics
-                const SizedBox(height: _boxSpacing),
-
-                //Scan Barcode button
-                TextButton(
-                  //Sets the background color, makes the
-                  //buttons not round, and ensures they are
-                  //all the same size.
-                  style: TextButton.styleFrom(
-                    backgroundColor: Color(0xFF9C6644),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
-                    ),
-                    minimumSize: _menuButtonSize,
-                  ),
-                  onPressed: (){
-
-                  },
-                  child: Text(
-                    "Scan Barcode",
-
-                    //This sets the font size, weight, and color
-                    //of the text on the button.
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF000000),
-                    ),
-                  )
-                ),
-
-                //Spacer element for aesthetics
-                const SizedBox(height: _boxSpacing),
-
-                //Add Book button
-                TextButton(
-                  //Sets the background color, makes the
-                  //buttons not round, and ensures they are
-                  //all the same size.
-                  style: TextButton.styleFrom(
-                    backgroundColor: Color(0xFF9C6644),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
-                    ),
-                    minimumSize: _menuButtonSize,
-                  ),
-                  onPressed: (){
-
-                  },
-                  child: Text(
-                    "Add Book",
-
-                    //This sets the font size, weight, and color
-                    //of the text on the button.
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF000000),
-                    ),
-                  )
-                ),
-              ],
-            ),
-          )
-        ),
+        child: HamburgerMenu(title: title),
       ),
 
       //right-hand side drawer or the filter drawer
@@ -867,7 +710,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
 
           //Sets the background color of the main filter elements
-          backgroundColor: _defaultPageColor,
+          backgroundColor: defaultPageColor,
 
           body: SizedBox(
             //Ensures the width is taking up the entire area
@@ -884,8 +727,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   "Filter By:",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: _headingFontSize,
-                    color: _invertColor(_defaultPageColor),
+                    fontSize: headingFontSize,
+                    color: _invertColor(defaultPageColor),
                   ),
                 ),
 
@@ -898,8 +741,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     Text(
                       "Personal Library",
                       style: TextStyle(
-                        fontSize: _subHeadingFontSize,
-                        color: _invertColor(_defaultPageColor),
+                        fontSize: subHeadingFontSize,
+                        color: _invertColor(defaultPageColor),
                       ),
                     ),
                     //Checkbox for the personal library
@@ -926,9 +769,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       //Sets the text, font size, font weight, and color of the text.
                       "Author",
                       style: TextStyle(
-                        fontSize: _subHeadingFontSize,
+                        fontSize: subHeadingFontSize,
                         fontWeight: FontWeight.bold,
-                        color: _invertColor(_defaultPageColor),
+                        color: _invertColor(defaultPageColor),
                       ),
                     ),
 
@@ -976,7 +819,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ]
                 ),
                 SizedBox(
-                  width: _filterBoxSize,
+                  width: filterBoxSize,
                   child: TextField(
                     controller: _authorTextController,
                     decoration: InputDecoration(
@@ -984,7 +827,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         //Sets the text and font size.
                         "Enter author...",
                         style: TextStyle(
-                          fontSize: _subHeadingFontSize,
+                          fontSize: subHeadingFontSize,
                         ),
                       ),
                       //fills the text field with the color white, sets the borded to the specified color with the specified width.
@@ -998,7 +841,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                     style: TextStyle(
-                      fontSize: _subHeadingFontSize,
+                      fontSize: subHeadingFontSize,
                     ),
                   ),
                 ),
@@ -1012,9 +855,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         //Sets the text, font size, font weight, and color of the text.
                         "Book Title",
                         style: TextStyle(
-                          fontSize: _subHeadingFontSize,
+                          fontSize: subHeadingFontSize,
                           fontWeight: FontWeight.bold,
-                          color: _invertColor(_defaultPageColor),
+                          color: _invertColor(defaultPageColor),
                         ),
                       ),
 
@@ -1062,7 +905,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ]
                 ),
                 SizedBox(
-                  width: _filterBoxSize,
+                  width: filterBoxSize,
                   child: TextField(
                     controller: _titleTextController,
                     decoration: InputDecoration(
@@ -1070,7 +913,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         //Sets the text and font size.
                         "Enter book title...",
                         style: TextStyle(
-                          fontSize: _subHeadingFontSize,
+                          fontSize: subHeadingFontSize,
                         ),
                       ),
                       //fills the text field with the color white, sets the borded to the specified color with the specified width.
@@ -1084,7 +927,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                     style: TextStyle(
-                      fontSize: _subHeadingFontSize,
+                      fontSize: subHeadingFontSize,
                     ),
                   ),
                 ),
@@ -1098,9 +941,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         //Sets the text, font size, font weight, and color of the text.
                         "Genre",
                         style: TextStyle(
-                          fontSize: _subHeadingFontSize,
+                          fontSize: subHeadingFontSize,
                           fontWeight: FontWeight.bold,
-                          color: _invertColor(_defaultPageColor),
+                          color: _invertColor(defaultPageColor),
                         ),
                       ),
 
@@ -1148,7 +991,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ]
                 ),
                 SizedBox(
-                  width: _filterBoxSize,
+                  width: filterBoxSize,
                   child: TextField(
                     controller: _genreTextController,
                     decoration: InputDecoration(
@@ -1165,12 +1008,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         //Sets the text and font size.
                         "Enter genre...",
                         style: TextStyle(
-                          fontSize: _subHeadingFontSize,
+                          fontSize: subHeadingFontSize,
                         ),
                       ),
                     ),
                     style: TextStyle(
-                      fontSize: _subHeadingFontSize,
+                      fontSize: subHeadingFontSize,
                     ),
                   ),
                 ),
@@ -1184,9 +1027,9 @@ class _MyHomePageState extends State<MyHomePage> {
                         //Sets the text, font size, font weight, and color of the text.
                         "Reviews",
                         style: TextStyle(
-                          fontSize: _subHeadingFontSize,
+                          fontSize: subHeadingFontSize,
                           fontWeight: FontWeight.bold,
-                          color: _invertColor(_defaultPageColor),
+                          color: _invertColor(defaultPageColor),
                         ),
                       ),
 
@@ -1244,7 +1087,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   //Sets the color of the button, the size of the button, and removes the rounding.
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFFDDB892),
-                    minimumSize: _minButtonSize,
+                    minimumSize: minButtonSize,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(0.0),
                     ),
@@ -1254,7 +1097,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     "Submit",
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: _subHeadingFontSize,
+                      fontSize: subHeadingFontSize,
                     ),
                   ),
                 )
@@ -1266,7 +1109,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
 
       //Sets the background color of the main part of the page.
-      backgroundColor: _defaultPageColor,
+      backgroundColor: defaultPageColor,
 
       //Displays all books on the page.
       body: ListView.builder(
@@ -1279,7 +1122,15 @@ class _MyHomePageState extends State<MyHomePage> {
               //Alternates the colors of each book.
               backgroundColor: bookColors[index % 3],
               onPressed: (){
-
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BookInfo(
+                      title: title,
+                      book: filteredBooks[index],
+                    )
+                  ),
+                );
               },
               //Removes the rounded edges on each book.
               shape: RoundedRectangleBorder(
@@ -1293,7 +1144,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   //Sets the color, size, weight, and truncates
                   //the title if it is too long to an ellipses.
                   color: Colors.white,
-                  fontSize: _bookFontSize,
+                  fontSize: bookFontSize,
                   fontWeight: FontWeight.bold,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -1319,6 +1170,164 @@ class _MyHomePageState extends State<MyHomePage> {
       //    ),
       //  ),
       //),
+    );
+  }
+}
+
+class HamburgerMenu extends StatelessWidget {
+  const HamburgerMenu({super.key, required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: defaultPageColor,
+      //Top-level menu for the pull-out menu
+      appBar: AppBar(
+        //Sets the color of the title and color of the appbar
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        //Hamburger menu button
+        leading: Container(
+          //Sets the color and corner radius of the
+          //hamburger menu button
+          decoration: BoxDecoration(
+            color: Color(0xFFD9D9D9),
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          //Sets the on pressed behavior to close the pull-out
+          //menu and sets the icon to be the hamburger menu
+          //icon
+          child: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(Icons.menu),
+          ),
+        ),
+
+        //The pull-out menu title
+        title: Center(
+          //Gets the title set from the first method.
+          child: Text(
+            title,
+            //Sets the color and font size of the title.
+            style: TextStyle(
+              color: Color(0xFFE6CCB2),
+              fontSize: 24,
+            ),
+          ),
+        ),
+      ),
+      //Everything else
+      body: SizedBox(
+        //Ensures the width is taking up the entire area
+        //This is done to ensure proper centering of the
+        //elements on the screen
+        width: double.infinity,
+
+        //Column element to add the buttons on top of each
+        //other
+        //This contains the view books, scan barcode,
+        // and add book buttons.
+        child: Column(
+          //Children element to hold multiple widgets
+          children: <Widget>[
+            //Spacer element for aesthetics
+            const SizedBox(height: boxSpacing),
+
+            //View Books button
+            TextButton(
+              //Sets the background color, makes the
+              //buttons not round, and ensures they are
+              //all the same size.
+              style: TextButton.styleFrom(
+                backgroundColor: Color(0xFF9C6644),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero,
+                ),
+                minimumSize: menuButtonSize,
+              ),
+
+              //Button logic when it's pressed
+              onPressed: () {
+                Navigator.pushNamed(context, '/');
+              },
+
+              //The text on the button
+              child: Text(
+                "View Books",
+
+                //This sets the font size, weight, and color
+                //of the text on the button.
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF000000),
+                ),
+              ),
+            ),
+
+            //Spacer element for aesthetics
+            const SizedBox(height: boxSpacing),
+
+            //Scan Barcode button
+            TextButton(
+              //Sets the background color, makes the
+              //buttons not round, and ensures they are
+              //all the same size.
+              style: TextButton.styleFrom(
+                backgroundColor: Color(0xFF9C6644),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero,
+                ),
+                minimumSize: menuButtonSize,
+              ),
+              onPressed: () {},
+              child: Text(
+                "Scan Barcode",
+
+                //This sets the font size, weight, and color
+                //of the text on the button.
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF000000),
+                ),
+              ),
+            ),
+
+            //Spacer element for aesthetics
+            const SizedBox(height: boxSpacing),
+
+            //Add Book button
+            TextButton(
+              //Sets the background color, makes the
+              //buttons not round, and ensures they are
+              //all the same size.
+              style: TextButton.styleFrom(
+                backgroundColor: Color(0xFF9C6644),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero,
+                ),
+                minimumSize: menuButtonSize,
+              ),
+              onPressed: () {},
+              child: Text(
+                "Add Book",
+
+                //This sets the font size, weight, and color
+                //of the text on the button.
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF000000),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
