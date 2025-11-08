@@ -65,7 +65,7 @@ class _BookInfoState extends State<BookInfo>{
                   },
                 ),
               ),
-              const SizedBox(width: boxSpacing,),
+              SizedBox(width: boxSpacing,),
               Text(title,
                 style:TextStyle(
                     color: Color(0xFFE6CCB2),
@@ -104,7 +104,10 @@ class _BookInfoState extends State<BookInfo>{
                   ),
                 ),
               ),
-              const SizedBox(height: boxSpacing),
+              SizedBox(height: boxSpacing),
+              if (book.getImage().isNotEmpty)
+                Image.network(book.getImage(), width: 100, height: 100),
+                SizedBox(height: boxSpacing),
               Text(
                 "Description: \n${book.getDescription()}",
                 style: TextStyle(
@@ -119,7 +122,7 @@ class _BookInfoState extends State<BookInfo>{
                   ],
                 ),
               ),
-              const SizedBox(height: boxSpacing),
+              SizedBox(height: boxSpacing),
               Text(
                 textAlign: TextAlign.left,
                 "Availability: ${book.getAvailability()}",
@@ -134,7 +137,7 @@ class _BookInfoState extends State<BookInfo>{
                   ],
                 ),
               ),
-              const SizedBox(height: boxSpacing),
+              SizedBox(height: boxSpacing),
               Text(
                 textAlign: TextAlign.left,
                 "Reviews: ${book.getReviewAverage()} / 10.0",
@@ -149,7 +152,7 @@ class _BookInfoState extends State<BookInfo>{
                   ],
                 ),
               ),
-              const SizedBox(height: boxSpacing),
+              SizedBox(height: boxSpacing),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

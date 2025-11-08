@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'BookInfo.dart';
+import 'AddBook.dart';
 
 //Some constant variables to ensure easy and proper sizing and colors.
 const filterBoxSize = 250.0;
-const boxSpacing = 40.0;
+late var boxSpacing = 40.0;
 const defaultPageColor = Color(0xFFEDE0D4);
 const minButtonSize = Size(50, 50);
 const headingFontSize = 40.0;
 const subHeadingFontSize = 25.0;
 const bookFontSize = 20.0;
 const menuButtonSize = Size(246, 53);
+List<Book> filteredBooks = [];
 
 void main() {
   runApp(const MyApp());
@@ -22,6 +24,23 @@ class MyApp extends StatelessWidget {
   // root of the application
   @override
   Widget build(BuildContext context) {
+    //generates a temporary list of books for testing
+    //TODO: change this to only include books gotten from an API call to the local database.
+    List<Book> books = [
+      Book("Super long title that probably won't fit on the thingamabob", "", "", "", "Unavailable", "", "Jo"),
+      Book("Harry Potter and the Sorcerer's Stone", "Fantasy", "J. K. Rowling", "This is a harry potter book.", "Available", "", "Jim"),
+      Book("Harry Potter and the Prisoner of Azkaban", "Fantasy", "J. K. Rowling", "", "", "", "Bob"),
+      Book("Title3", "", "a", "", "", "", "Jo"),
+      Book("Title4", "", "b", "", "", "", "Jim"),
+      Book("Title5", "Horror", "c", "", "", "", "Bob"),
+      Book("Title6", "", "d", "", "", "", "Jo"),
+      Book("Title7", "", "e", "", "", "", "Jim"),
+      Book("Title8", "Thriller", "f", "", "", "", "Bob"),
+      Book("Title9", "", "", "g", "", "", "Jo"),
+      Book("Title10", "", "h", "", "", "", "Jim"),
+      Book("Title11", "", "i", "", "", "", "Bob"),
+      Book("Title12", "", "j", "", "", "", "Bob")];
+
     return MaterialApp(
       //Sets the title and themdata of the page
       title: 'Book DB',
@@ -29,9 +48,9 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFF7F5539)),
       ),
       //sets the home page by calling MyHomePage widget with the title.
-      home: const MyHomePage(title: title),
+      home: MyHomePage(title: title, books: books,),
       routes: {
-
+        '/AddBook': (context) => const AddBook(title: title),
       },
     );
   }
@@ -39,10 +58,12 @@ class MyApp extends StatelessWidget {
 
 //MyHomePage widget that displays my home page.
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  const MyHomePage({super.key, required this.title, required this.books});
 
   //sets the title.
   final String title;
+
+  final List<Book> books;
 
   //Creates a homepage state.
   @override
@@ -82,11 +103,51 @@ class Book{
   var _availability = "";
   var _isbn = "";
   var _owner = "";
+  var _image = "";
 
   //Constructor class for Book
   Book(this._title, this._genre, this._author,
       this._description, this._availability,
       this._isbn, this._owner);
+
+  static List<Book> getBooksFromJson(List<dynamic> json){
+    List<Book> books = [];
+
+    int length = json.length;
+
+    if (length > 10){
+      length = 10;
+    }
+
+    for (int i = 0; i < length; i++){
+      String title, author = "";
+
+      try{
+        author = json[i]['author_name'][0];
+      }catch(_){
+        author = "";
+      }
+
+      try{
+        title = json[i]['title'];
+      }catch(_){
+        title = "";
+      }
+
+      Book b = Book(
+        title, //title
+        '', //genre
+        author, //author
+        '', //Description
+        '', //Availability
+        '', //ISBN
+        '' //Owner
+      );
+      books.add(b);
+    }
+
+    return books;
+  }
 
   //Normal setters to set the title, genre, author, description, availability, isbn, and owner.
   void setTitle(String title){_title = title;}
@@ -94,6 +155,8 @@ class Book{
   void setGenre(String genre){_genre = genre;}
 
   void setAuthor(String author){_author = author;}
+
+  void setImage(String image){_image = image;}
 
   //This is a setter to add a review to the list of reviews
   void addReview(Review review) {_reviews.add(review);}
@@ -155,6 +218,7 @@ class Book{
   String getIsbn(){return _isbn;}
 
   String getOwner(){return _owner;}
+  String getImage(){return _image;}
 }
 
 //User class to handle ownership and other user things
@@ -309,7 +373,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   //generates a temporary list of books for testing
   //TODO: change this to only include books gotten from an API call to the local database.
-  late List<Book> books = [
+  List<Book> books = [
     Book("Super long title that probably won't fit on the thingamabob", "", "", "", "Unavailable", "", "Jo"),
     Book("Harry Potter and the Sorcerer's Stone", "Fantasy", "J. K. Rowling", "This is a harry potter book.", "Available", "", "Jim"),
     Book("Harry Potter and the Prisoner of Azkaban", "Fantasy", "J. K. Rowling", "", "", "", "Bob"),
@@ -327,9 +391,6 @@ class _MyHomePageState extends State<MyHomePage> {
   //Creates a user variable to test out the 
   //TODO: change this to only include the user gotten from an API call to the local database.
   User user = User("Bob");
-
-  //This creates a list of filteredbooks for the use of filtering later on.
-  late List<Book> filteredBooks = books;
 
   //simple helper class to invert a color. Mainly used for text on the page.
   Color _invertColor(Color color){
@@ -590,6 +651,11 @@ class _MyHomePageState extends State<MyHomePage> {
     //Creates the title with the current user's name.
     String title = widget.title;
     title += " - ${user._getUser()}";
+
+    List<Book> books = widget.books;
+
+    //This creates a list of filteredbooks for the use of filtering later on.
+    late List<Book> filteredBooks = books;
 
     return Scaffold(
       //top-level menu for the main page.
@@ -1121,6 +1187,7 @@ class _MyHomePageState extends State<MyHomePage> {
             title: FloatingActionButton(
               //Alternates the colors of each book.
               backgroundColor: bookColors[index % 3],
+              heroTag: "${filteredBooks[index].getTitle()} $index",
               onPressed: (){
                 Navigator.push(
                   context,
@@ -1181,6 +1248,8 @@ class HamburgerMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    boxSpacing = MediaQuery.of(context).size.height * .05;
+
     return Scaffold(
       backgroundColor: defaultPageColor,
       //Top-level menu for the pull-out menu
@@ -1234,7 +1303,7 @@ class HamburgerMenu extends StatelessWidget {
           //Children element to hold multiple widgets
           children: <Widget>[
             //Spacer element for aesthetics
-            const SizedBox(height: boxSpacing),
+            SizedBox(height: boxSpacing),
 
             //View Books button
             TextButton(
@@ -1269,7 +1338,7 @@ class HamburgerMenu extends StatelessWidget {
             ),
 
             //Spacer element for aesthetics
-            const SizedBox(height: boxSpacing),
+            SizedBox(height: boxSpacing),
 
             //Scan Barcode button
             TextButton(
@@ -1298,7 +1367,7 @@ class HamburgerMenu extends StatelessWidget {
             ),
 
             //Spacer element for aesthetics
-            const SizedBox(height: boxSpacing),
+            SizedBox(height: boxSpacing),
 
             //Add Book button
             TextButton(
@@ -1312,7 +1381,9 @@ class HamburgerMenu extends StatelessWidget {
                 ),
                 minimumSize: menuButtonSize,
               ),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.pushNamed(context, "/AddBook");
+              },
               child: Text(
                 "Add Book",
 
