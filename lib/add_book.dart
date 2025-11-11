@@ -1,13 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'book_info.dart';
 import 'main.dart';
 
 import 'package:http/http.dart' as http;
 
-final String bookSearchAPI = "https://openlibrary.org/search.json?q=";
+final String bookSearchAPI = "https://openlibrary.org/search.json?limit=10&lang=eng&";
 final String bookInfoAPI = "https://openlibrary.org/isbn/";
 final String bookCoverAPI = "https://covers.openlibrary.org/b/isbn/";
+final String getExtraBookInfoAPI = "https://openlibrary.org/books/"; //Make sure to append .json to the end
+final String getBookWorkInfoAPI = "https://openlibrary.org/works/"; //Make sure to append .json
 
 final Map<String, String> userAgent =
 {HttpHeaders.userAgentHeader:
@@ -26,7 +29,7 @@ Future<http.Response> searchBooks(String query) async{
 //TODO: Set this up on the server side API instead.
 Future<http.Response> getBook(String isbn) async{
   return await http.get(
-    Uri.parse(bookInfoAPI + isbn),
+    Uri.parse("$bookInfoAPI$isbn.json"),
     headers: userAgent
   );
 }
@@ -38,6 +41,24 @@ Future<http.Response> getBookCover(String isbn, String size) async{
     Uri.parse("$bookCoverAPI$isbn-$size.jpg"),
     headers: userAgent,
   );
+}
+
+Future<http.Response> getExtraBookInfo(String coverEdition) async {
+  return await http.get(
+    Uri.parse("$getExtraBookInfoAPI$coverEdition.json?lang=eng"),
+    headers: userAgent,
+  );
+}
+
+Future<http.Response> getWorkInfo(String work) async{
+  return await http.get(
+    Uri.parse("$getBookWorkInfoAPI$work.json"),
+    headers: userAgent,
+  );
+}
+
+void addBookToList(Book b){
+  addBook(b);
 }
 
 class AddBook extends StatefulWidget{
@@ -64,15 +85,19 @@ class AddBookState extends State<AddBook>{
     var query = "";
 
     if (bookSearchTitle.isNotEmpty){
-      query += bookSearchTitle;
+      query += "title=$bookSearchTitle";
     }
 
     if (authorSearchName.isNotEmpty){
       if (query.isNotEmpty){
-        query += " ";
+        query += "&";
       }
-      query += "By $authorSearchName";
+      query += "author=$authorSearchName";
     }
+
+    setState(() {
+      _isLoading = true;
+    });
 
     http.Response resp = await searchBooks(query);
 
@@ -88,13 +113,70 @@ class AddBookState extends State<AddBook>{
       return;
     }
 
-    foundBooks = Book.getBooksFromJson(json);
+    foundBooks = await Book.getBooksFromJson(json);
+  }
+
+  Future<void> getBookFromISBN(BuildContext context) async {
+    currentBook = Book();
+    String isbn = _isbn.text;
+
+    String title = "";
+    String description = "";
+    String author = "";
+
+    http.Response resp = await getBook(isbn);
+
+    if (resp.statusCode != 200){
+      return;
+    }
+
+    Map<String, dynamic> bookInfo = jsonDecode(resp.body);
+
+    Book b = Book();
+
+    String works = "";
+    Map<String, dynamic> workInfo = {};
+    try {
+      works = bookInfo['works'][0]['key'].toString().substring('/works/'.length);
+
+      resp = await getWorkInfo(works);
+
+      if (resp.statusCode != 200){
+        return;
+      }
+
+      workInfo = jsonDecode(resp.body);
+    }catch(_){
+      return;
+    }
+
+    try{
+      title = workInfo['title'];
+    }catch(_){
+      title = "";
+    }
+
+    try {
+      description = workInfo['description']['value'];
+    }catch(_){
+      description = "";
+    }
+
+    b.setTitle(title);
+    b.setDescription(description);
+    b.setAuthor(author);
+
+    currentBook = b;
   }
 
   final TextEditingController _authorName = TextEditingController();
   final TextEditingController _bookTitle = TextEditingController();
+  final TextEditingController _isbn = TextEditingController();
+
+  bool _isLoading = false;
 
   List<Book> foundBooks = [];
+  Book currentBook = Book();
 
   @override
   Widget build(BuildContext context){
@@ -104,6 +186,7 @@ class AddBookState extends State<AddBook>{
     final screenHeight = MediaQuery.of(context).size.height;
 
     boxSpacing = MediaQuery.of(context).size.height * .05;
+
 
     return Scaffold(
       backgroundColor: defaultPageColor,
@@ -192,6 +275,7 @@ class AddBookState extends State<AddBook>{
                       SizedBox(
                         width: screenWidth * .6,
                         child: TextField(
+                          controller: _isbn,
                           decoration: InputDecoration(
                             hint: Text(
                               //Sets the text and font size.
@@ -219,8 +303,21 @@ class AddBookState extends State<AddBook>{
                             borderRadius: BorderRadiusGeometry.zero,
                           ),
                         ),
-                        onPressed: (){
+                        onPressed: () async{
+                          await getBookFromISBN(context);
 
+                          if (context.mounted && currentBook.getTitle().isNotEmpty){
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BookInfo(
+                                  title: title,
+                                  book: currentBook,
+                                  addBook: true,
+                                )
+                              )
+                            );
+                          }
                         },
                         child: Text(
                           "Go!",
@@ -245,101 +342,110 @@ class AddBookState extends State<AddBook>{
                       showModalBottomSheet(
                         context: context,
                         builder: (BuildContext context) {
-                          return Container(
-                            color: Color(0xFFB08968),
-                            height: screenHeight * .5, // Adjust height as needed
-                            child: Center(
-                              child: Column(
-                                children: [
-                                  //Author label and text field
-                                  Text(
-                                    "Enter Author",
-                                    style: TextStyle(
-                                      fontSize: 30,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  TextField(
-                                    controller: _authorName,
-                                    style: TextStyle(
-                                      fontSize: 30,
-                                    ),
-                                    decoration: InputDecoration(
-                                      hintText: "Author...",
-                                      hintStyle: TextStyle(
+                          if (!_isLoading){
+                            return Container(
+                              color: Color(0xFFB08968),
+                              height: screenHeight * .5, // Adjust height as needed
+                              child: Center(
+                                child: Column(
+                                  children: [
+                                    //Author label and text field
+                                    Text(
+                                      "Enter Author",
+                                      style: TextStyle(
                                         fontSize: 30,
+                                        color: Colors.white,
                                       ),
-                                      filled: true,
-                                      fillColor: Colors.white,
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Color(0xFF9C6644),
-                                          width: 5.0,
+                                    ),
+                                    TextField(
+                                        controller: _authorName,
+                                        style: TextStyle(
+                                          fontSize: 30,
                                         ),
-                                      ),
-                                    )
-                                  ),
-                                  SizedBox(height: boxSpacing,),
+                                        decoration: InputDecoration(
+                                          hintText: "Author...",
+                                          hintStyle: TextStyle(
+                                            fontSize: 30,
+                                          ),
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          enabledBorder: OutlineInputBorder(
+                                            borderSide: BorderSide(
+                                              color: Color(0xFF9C6644),
+                                              width: 5.0,
+                                            ),
+                                          ),
+                                        )
+                                    ),
+                                    SizedBox(height: boxSpacing,),
 
-                                  //Title label and text field
-                                  Text(
-                                    "Enter Title",
-                                    style: TextStyle(
-                                      fontSize: 30,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  TextField(
-                                    controller: _bookTitle,
-                                    style: TextStyle(
-                                      fontSize: 30,
-                                    ),
-                                    decoration: InputDecoration(
-                                      hintText: "Title...",
-                                      hintStyle: TextStyle(
+                                    //Title label and text field
+                                    Text(
+                                      "Enter Title",
+                                      style: TextStyle(
                                         fontSize: 30,
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.white,
-                                      enabledBorder: OutlineInputBorder(
-                                        borderSide: BorderSide(
-                                          color: Color(0xFF9C6644),
-                                          width: 5.0,
-                                        ),
+                                        color: Colors.white,
                                       ),
                                     ),
-                                  ),
-                                  SizedBox(height: boxSpacing,),
-
-                                  //Search button
-                                  ElevatedButton(
-                                    onPressed: () async {
-                                      await searchAndLoadBooks(context);
-
-                                      if (context.mounted){
-                                        Navigator.pop(context);
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => MyHomePage(
-                                              title: title,
-                                              books: foundBooks,
-                                            )
-                                          )
-                                        );
-                                      }
-                                    },
-                                    child: Text(
-                                      "Search",
+                                    TextField(
+                                      controller: _bookTitle,
                                       style: TextStyle(
                                         fontSize: 30,
                                       ),
+                                      decoration: InputDecoration(
+                                        hintText: "Title...",
+                                        hintStyle: TextStyle(
+                                          fontSize: 30,
+                                        ),
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                            color: Color(0xFF9C6644),
+                                            width: 5.0,
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                  )
-                                ],
+                                    SizedBox(height: boxSpacing,),
+
+                                    //Search button
+                                    ElevatedButton(
+                                      onPressed: () async {
+                                        await searchAndLoadBooks(context);
+
+                                        if (context.mounted){
+                                          Navigator.pop(context);
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) => MyHomePage(
+                                                    title: title,
+                                                    books: foundBooks,
+                                                  )
+                                              )
+                                          );
+                                        }
+                                      },
+                                      child: Text(
+                                        "Search",
+                                        style: TextStyle(
+                                          fontSize: 30,
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
+                            );
+                          }else{
+                            return Container(
+                              color: Color(0xFFB08968),
+                              child: Center(
+                                child: Text("Loading..."),
+                              ),
+                            );
+                          }
                         },
                       );
                     },

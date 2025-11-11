@@ -1,17 +1,42 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'BookInfo.dart';
-import 'AddBook.dart';
+import 'package:http/http.dart' as http;
+import 'book_info.dart';
+import 'add_book.dart';
 
 //Some constant variables to ensure easy and proper sizing and colors.
 const filterBoxSize = 250.0;
-late var boxSpacing = 40.0;
+var boxSpacing = 40.0;
 const defaultPageColor = Color(0xFFEDE0D4);
 const minButtonSize = Size(50, 50);
 const headingFontSize = 40.0;
 const subHeadingFontSize = 25.0;
 const bookFontSize = 20.0;
 const menuButtonSize = Size(246, 53);
-List<Book> filteredBooks = [];
+
+//Creates a user variable to test out the
+//TODO: change this to only include the user gotten from an API call to the local database.
+User user = User("Bob");
+
+//generates a temporary list of books for testing
+//TODO: change this to only include books gotten from an API call to the local database.
+List<Book> tempBooks = [
+  ];
+
+//Book("Super long title that probably won't fit on the thingamabob", "", "", "", "Unavailable", "", "Jo"),
+//   Book("Harry Potter and the Sorcerer's Stone", "Fantasy", "J. K. Rowling", "This is a harry potter book.", "Available", "", "Jim"),
+//   Book("Harry Potter and the Prisoner of Azkaban", "Fantasy", "J. K. Rowling", "", "", "", "Bob"),
+//   Book("Title3", "", "a", "", "", "", "Jo"),
+//   Book("Title4", "", "b", "", "", "", "Jim"),
+//   Book("Title5", "Horror", "c", "", "", "", "Bob"),
+//   Book("Title6", "", "d", "", "", "", "Jo"),
+//   Book("Title7", "", "e", "", "", "", "Jim"),
+//   Book("Title8", "Thriller", "f", "", "", "", "Bob"),
+//   Book("Title9", "", "", "g", "", "", "Jo"),
+//   Book("Title10", "", "h", "", "", "", "Jim"),
+//   Book("Title11", "", "i", "", "", "", "Bob"),
+//   Book("Title12", "", "j", "", "", "", "Bob")
 
 void main() {
   runApp(const MyApp());
@@ -21,34 +46,19 @@ class MyApp extends StatelessWidget {
   static const title = "Book DB";
   const MyApp({super.key});
 
+
   // root of the application
   @override
   Widget build(BuildContext context) {
-    //generates a temporary list of books for testing
-    //TODO: change this to only include books gotten from an API call to the local database.
-    List<Book> books = [
-      Book("Super long title that probably won't fit on the thingamabob", "", "", "", "Unavailable", "", "Jo"),
-      Book("Harry Potter and the Sorcerer's Stone", "Fantasy", "J. K. Rowling", "This is a harry potter book.", "Available", "", "Jim"),
-      Book("Harry Potter and the Prisoner of Azkaban", "Fantasy", "J. K. Rowling", "", "", "", "Bob"),
-      Book("Title3", "", "a", "", "", "", "Jo"),
-      Book("Title4", "", "b", "", "", "", "Jim"),
-      Book("Title5", "Horror", "c", "", "", "", "Bob"),
-      Book("Title6", "", "d", "", "", "", "Jo"),
-      Book("Title7", "", "e", "", "", "", "Jim"),
-      Book("Title8", "Thriller", "f", "", "", "", "Bob"),
-      Book("Title9", "", "", "g", "", "", "Jo"),
-      Book("Title10", "", "h", "", "", "", "Jim"),
-      Book("Title11", "", "i", "", "", "", "Bob"),
-      Book("Title12", "", "j", "", "", "", "Bob")];
-
+    List<Book> b = [];
     return MaterialApp(
-      //Sets the title and themdata of the page
+      //Sets the title and theme data of the page
       title: 'Book DB',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Color(0xFF7F5539)),
       ),
       //sets the home page by calling MyHomePage widget with the title.
-      home: MyHomePage(title: title, books: books,),
+      home: MyHomePage(title: title, books: b,),
       routes: {
         '/AddBook': (context) => const AddBook(title: title),
       },
@@ -105,22 +115,17 @@ class Book{
   var _owner = "";
   var _image = "";
 
-  //Constructor class for Book
-  Book(this._title, this._genre, this._author,
-      this._description, this._availability,
-      this._isbn, this._owner);
-
-  static List<Book> getBooksFromJson(List<dynamic> json){
+  //Time complexity is about O(nlog(n))
+  static Future<List<Book>> getBooksFromJson(List<dynamic> json) async {
     List<Book> books = [];
 
     int length = json.length;
 
-    if (length > 10){
-      length = 10;
-    }
-
     for (int i = 0; i < length; i++){
-      String title, author = "";
+      String title = "";
+      String author = "";
+      String isbn = "";
+      String description = "";
 
       try{
         author = json[i]['author_name'][0];
@@ -134,16 +139,85 @@ class Book{
         title = "";
       }
 
-      Book b = Book(
-        title, //title
-        '', //genre
-        author, //author
-        '', //Description
-        '', //Availability
-        '', //ISBN
-        '' //Owner
-      );
-      books.add(b);
+      try{
+        List<dynamic> id = json[i]['ia'];
+
+        id.sort((a, b) => a.toString().compareTo(b.toString()));
+
+        int identifiers = id.length;
+
+        bool foundVal = false;
+
+        int start = 0;
+        int end = identifiers;
+
+        //binary search to find the isbn in each book. O(log(n))
+        while (!foundVal){
+          if (start > end){
+            break;
+          }
+
+          int mid = (start + end) ~/ 2;
+
+          int comparison = 'isbn_'.compareTo(id[mid].toString().substring(0, 'isbn_'.length));
+
+          if (comparison == 0){
+            isbn = id[mid].toString().substring('isbn_'.length);
+            foundVal = true;
+          }else if (comparison > 0){
+            start = mid + 1;
+          }else{
+            end = mid - 1;
+          }
+        }
+      }catch(_){
+        isbn = "";
+      }
+
+      String coverEdition = "";
+
+      try{
+        coverEdition = json[i]['cover_edition_key'];
+      }catch(_){
+        //Error getting cover edition...
+        coverEdition = "";
+      }
+
+      http.Response resp = await getExtraBookInfo(coverEdition);
+
+      if (resp.statusCode == 200 && coverEdition.isNotEmpty){
+        Map<String, dynamic> extraBookInfo = jsonDecode(resp.body);
+
+        try{
+          isbn = extraBookInfo['isbn13'].toString();
+        }catch(_){
+          isbn = "";
+        }
+
+        if (isbn.isEmpty){
+          try{
+            isbn = extraBookInfo['isbn10'].toString();
+          }catch(_){
+            //Error...
+            isbn = "";
+          }
+        }
+
+        try {
+          description = extraBookInfo['description']['value'];
+        }catch (_){
+          description = "";
+        }
+      }
+
+      if (isbn.isNotEmpty){
+        Book b = Book();
+        b.setTitle(title);
+        b.setAuthor(author);
+        b.setIsbn(isbn);
+        b.setDescription(description);
+        books.add(b);
+      }
     }
 
     return books;
@@ -300,7 +374,7 @@ class Filter{
     _clearAllBut(_userText);
   }
 
-  //This clears all of the variables intialized at the top except
+  //This clears all of the variables initialized at the top except
   //for the one that starts the same as the text passed into this.
   void _clearAllBut(String text){
     if (!text.contains(_authorText)){
@@ -346,6 +420,15 @@ class ValueMap{
   String _getValue(){return _value;}
 }
 
+List<Book> getCurrentBooks(){
+  return tempBooks;
+}
+
+void addBook(Book b){
+  b.setOwner(user._getUser());
+  tempBooks.add(b);
+}
+
 //The actual homepage stuff
 class _MyHomePageState extends State<MyHomePage> {
   //This list of colors keeps track of the different color of books on the main page. Allows for alternating between these three books.
@@ -363,6 +446,7 @@ class _MyHomePageState extends State<MyHomePage> {
   //the filter is shown.
   bool _personalLibrary = false;
   bool _showClearFilterButton = false;
+  bool _searchList = false;
 
   //Some more helper variables to keep track of which way to sort the books
   //given a specific part of the book i.e. author, title, genre, review
@@ -371,26 +455,8 @@ class _MyHomePageState extends State<MyHomePage> {
   int genreSort = 0;
   int reviewSort = 0;
 
-  //generates a temporary list of books for testing
-  //TODO: change this to only include books gotten from an API call to the local database.
-  List<Book> books = [
-    Book("Super long title that probably won't fit on the thingamabob", "", "", "", "Unavailable", "", "Jo"),
-    Book("Harry Potter and the Sorcerer's Stone", "Fantasy", "J. K. Rowling", "This is a harry potter book.", "Available", "", "Jim"),
-    Book("Harry Potter and the Prisoner of Azkaban", "Fantasy", "J. K. Rowling", "", "", "", "Bob"),
-    Book("Title3", "", "a", "", "", "", "Jo"),
-    Book("Title4", "", "b", "", "", "", "Jim"),
-    Book("Title5", "Horror", "c", "", "", "", "Bob"),
-    Book("Title6", "", "d", "", "", "", "Jo"),
-    Book("Title7", "", "e", "", "", "", "Jim"),
-    Book("Title8", "Thriller", "f", "", "", "", "Bob"),
-    Book("Title9", "", "", "g", "", "", "Jo"),
-    Book("Title10", "", "h", "", "", "", "Jim"),
-    Book("Title11", "", "i", "", "", "", "Bob"),
-    Book("Title12", "", "j", "", "", "", "Bob")];
-
-  //Creates a user variable to test out the 
-  //TODO: change this to only include the user gotten from an API call to the local database.
-  User user = User("Bob");
+  List<Book> books = getCurrentBooks();
+  List<Book> filteredBooks = [];
 
   //simple helper class to invert a color. Mainly used for text on the page.
   Color _invertColor(Color color){
@@ -403,7 +469,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Color.fromARGB((color.a * 255).round(), r, g, b);
   }
 
-  //searches through the list of valuemaps given to find the target given.
+  //searches through the list of value maps given to find the target given.
   //O(N) time complexity
   List<ValueMap> _search(List<ValueMap> values, String target){
     //initializes the low and high values
@@ -635,6 +701,11 @@ class _MyHomePageState extends State<MyHomePage> {
     _genreTextController.text = "";
     _personalLibrary = false;
 
+    if (_searchList){
+      _searchList = false;
+      Navigator.pushNamed(context, '/');
+    }
+
     setState(() {
       filteredBooks = books;
       _showClearFilterButton = false;
@@ -652,10 +723,13 @@ class _MyHomePageState extends State<MyHomePage> {
     String title = widget.title;
     title += " - ${user._getUser()}";
 
-    List<Book> books = widget.books;
-
-    //This creates a list of filteredbooks for the use of filtering later on.
-    late List<Book> filteredBooks = books;
+    if (filteredBooks.isEmpty && widget.books.isEmpty) {
+      _clearFilterInputs();
+    }else if(filteredBooks.isEmpty && widget.books.isNotEmpty){
+      filteredBooks = widget.books;
+      _showClearFilterButton = true;
+      _searchList = true;
+    }
 
     return Scaffold(
       //top-level menu for the main page.
@@ -705,7 +779,8 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Text("Clear Filter"),
             ),
           //Creates the filter button for filtering the list.
-          Builder(
+          if (!_searchList)
+            Builder(
             builder: (context){
               return Container(
                 //Sets the color and roundedness of the button
@@ -813,7 +888,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     //Checkbox for the personal library
                     Checkbox(
-                      //If the value changes, then make sure the value is not null then assign personal livrary to the value.
+                      //If the value changes, then make sure the value is not null then assign personal library to the value.
                       value: _personalLibrary,
                       onChanged: (bool? value){
                         setState(() {
@@ -896,7 +971,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           fontSize: subHeadingFontSize,
                         ),
                       ),
-                      //fills the text field with the color white, sets the borded to the specified color with the specified width.
+                      //fills the text field with the color white, sets the border to the specified color with the specified width.
                       filled: true,
                       fillColor: Colors.white,
                       enabledBorder: OutlineInputBorder(
@@ -982,7 +1057,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           fontSize: subHeadingFontSize,
                         ),
                       ),
-                      //fills the text field with the color white, sets the borded to the specified color with the specified width.
+                      //fills the text field with the color white, sets the border to the specified color with the specified width.
                       filled: true,
                       fillColor: Colors.white,
                       enabledBorder: OutlineInputBorder(
@@ -1061,7 +1136,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: TextField(
                     controller: _genreTextController,
                     decoration: InputDecoration(
-                      //fills the text field with the color white, sets the borded to the specified color with the specified width.
+                      //fills the text field with the color white, sets the border to the specified color with the specified width.
                       filled: true,
                       fillColor: Colors.white,
                       enabledBorder: OutlineInputBorder(
@@ -1178,47 +1253,68 @@ class _MyHomePageState extends State<MyHomePage> {
       backgroundColor: defaultPageColor,
 
       //Displays all books on the page.
-      body: ListView.builder(
+      body: filteredBooks.isNotEmpty?
+      ListView.builder(
         itemCount: filteredBooks.length, // The total number of items
         //Gets the context and the index.
         itemBuilder: (BuildContext context, int index) {
           return ListTile(
-            //Creates a list tile for each item as a button
-            title: FloatingActionButton(
-              //Alternates the colors of each book.
-              backgroundColor: bookColors[index % 3],
-              heroTag: "${filteredBooks[index].getTitle()} $index",
-              onPressed: (){
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => BookInfo(
-                      title: title,
-                      book: filteredBooks[index],
-                    )
+              //Creates a list tile for each item as a button
+              title: FloatingActionButton(
+                //Alternates the colors of each book.
+                backgroundColor: bookColors[index % 3],
+                heroTag: "${filteredBooks[index].getTitle()} $index",
+                onPressed: (){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => BookInfo(
+                          title: title,
+                          book: filteredBooks[index],
+                          addBook: _searchList,
+                        )
+                    ),
+                  );
+                },
+                //Removes the rounded edges on each book.
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero,
+                ),
+                //Sets the text to be the title of each book.
+                child: Text(
+                  filteredBooks[index].getTitle(),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    //Sets the color, size, weight, and truncates
+                    //the title if it is too long to an ellipses.
+                    color: Colors.white,
+                    fontSize: bookFontSize,
+                    fontWeight: FontWeight.bold,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                );
-              },
-              //Removes the rounded edges on each book.
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.zero,
-              ),
-              //Sets the text to be the title of each book.
-              child: Text(
-                filteredBooks[index].getTitle(),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  //Sets the color, size, weight, and truncates
-                  //the title if it is too long to an ellipses.
-                  color: Colors.white,
-                  fontSize: bookFontSize,
-                  fontWeight: FontWeight.bold,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            ),
-          );
+            );
         },
+      ):
+      Center(
+        child: Column(
+          children: [
+            Text(
+              "No books available...",
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+              )
+            ),
+            ElevatedButton(
+                onPressed: (){
+                  Navigator.pushNamed(context, '/AddBook');
+                },
+                child: Text("Add Books")
+            ),
+          ],
+        )
       ),
 
       //For future code. Can add this if there are no
