@@ -1,16 +1,5 @@
-# book_db
-
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Personal Book DB
+# Current Implementation
+* Main page with a list of temporary books that allow you to filter based on a few options.
+* Book info page that shows information about a book that you select from the main page.
+* Add book page that allows the user to add a book with the ISBN, or allow the user to search for the book with the title or author name.
