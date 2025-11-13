@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'main.dart';
 import 'add_book.dart';
 
+final int descMaxLines = 3;
+
 class BookInfo extends StatefulWidget{
   const BookInfo({super.key, required this.title,
   required this.book, required this.addBook});
@@ -100,14 +102,19 @@ class _BookInfoState extends State<BookInfo>{
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (widget.addBook)
-                    ElevatedButton(
-                      onPressed: (){
-                        addBookToList(book);
+                    Center(
+                      child: ElevatedButton(
+                        style: lightButtonStyle,
+                        onPressed: (){
+                          addBookToList(book);
 
-                        Navigator.pushNamed(context, '/');
-                      },
-                      child: Text(
-                          "Add Book"
+                          Navigator.pushNamed(context, '/');
+                        },
+                        child: Text(
+
+                          "Add Book",
+                          style: lightButtonTextStyle,
+                        ),
                       ),
                     ),
                   //Book Title
@@ -135,33 +142,83 @@ class _BookInfoState extends State<BookInfo>{
                   if (book.getImage().isNotEmpty)
                     Image.network(book.getImage(), width: 100, height: 100),
                   //Book description and button.
-                  Column(
-                    children: [
-                      Text(
-                        "Description: \n${book.getDescription()}",
-                        style: TextStyle(
-                          fontWeight: FontWeight.normal,
-                          fontSize: 25,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black,
-                              offset: Offset(3.0, 3.0),
+                  LayoutBuilder(
+                      builder: (BuildContext context, BoxConstraints constraints){
+                        final TextPainter textPainter = TextPainter(
+                          text: TextSpan(
+                            text: "Description: \n${book.getDescription()}",
+                            style: TextStyle(
+                              fontWeight: FontWeight.normal,
+                              fontSize: 25,
+                              color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black,
+                                  offset: Offset(3.0, 3.0),
+                                ),
+                              ],
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ],
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      ElevatedButton(
-                        onPressed: (){
-                          setState(() {
-                            _showDescription = true;
-                          });
-                        },
-                        child: Text("Show more..."),
-                      ),
-                    ],
+                          ),
+                          maxLines: descMaxLines,
+                          textDirection: TextDirection.ltr,
+
+                        )..layout(maxWidth: constraints.maxWidth);
+
+                        if (textPainter.didExceedMaxLines){
+                          return Column(
+                            children: [
+                              Text(
+                                "Description: \n${book.getDescription()}",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 25,
+                                  color: Colors.white,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.black,
+                                      offset: Offset(3.0, 3.0),
+                                    ),
+                                  ],
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                maxLines: descMaxLines,
+                              ),
+                              ElevatedButton(
+                                style: lightButtonStyle,
+                                onPressed: (){
+                                  setState(() {
+                                    _showDescription = true;
+                                  });
+                                },
+                                child: Text(
+                                  "Show more...",
+                                  style: lightButtonTextStyle,
+                                ),
+                              ),
+                            ],
+                          );
+                        }else{
+                          return Text(
+                            "Description: \n${book.getDescription()}",
+                            style: TextStyle(
+                              fontWeight: FontWeight.normal,
+                              fontSize: 25,
+                              color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black,
+                                  offset: Offset(3.0, 3.0),
+                                ),
+                              ],
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            maxLines: descMaxLines,
+                          );
+                        }
+                      }
                   ),
+
                   //Availability
                   Text(
                     textAlign: TextAlign.left,
@@ -194,28 +251,35 @@ class _BookInfoState extends State<BookInfo>{
                   ),
 
                   if (book.getOwner().isNotEmpty)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        //Request Book Button
-                        ElevatedButton(
-                          onPressed: (){
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          //Request Book Button
+                          ElevatedButton(
+                            style: lightButtonStyle,
+                            onPressed: (){
 
-                          },
-                          child: Text(
-                              "Request Book"
+                            },
+                            child: Text(
+                              "Request Book",
+                              style: lightButtonTextStyle,
+                            ),
                           ),
-                        ),
-                        //Leave Review Button
-                        ElevatedButton(
-                          onPressed: (){
+                          //Leave Review Button
+                          ElevatedButton(
+                            style: lightButtonStyle,
+                            onPressed: (){
 
-                          },
-                          child: Text(
-                              "Leave Review"
+                            },
+                            child: Text(
+                              "Leave Review",
+                              style: lightButtonTextStyle,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     )
                 ],
               ),
@@ -247,12 +311,16 @@ class _BookInfoState extends State<BookInfo>{
                           ),
                         ),
                         ElevatedButton(
+                          style: lightButtonStyle,
                           onPressed: (){
                             setState(() {
                               _showDescription = false;
                             });
                           },
-                          child: Text("show less..."),
+                          child: Text(
+                            "Show less...",
+                            style: lightButtonTextStyle,
+                          ),
                         ),
                       ],
                     ),

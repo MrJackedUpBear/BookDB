@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'book_info.dart';
 import 'add_book.dart';
+import 'scan_barcode.dart';
 
 //Some constant variables to ensure easy and proper sizing and colors.
 const filterBoxSize = 250.0;
@@ -14,6 +15,45 @@ const headingFontSize = 40.0;
 const subHeadingFontSize = 25.0;
 const bookFontSize = 20.0;
 const menuButtonSize = Size(246, 53);
+
+double screenWidth = 0.0;
+double screenHeight = 0.0;
+
+final defaultButtonStyle = ButtonStyle(
+    backgroundColor: WidgetStateProperty.all<Color>(Color(0xFF9C6644)),
+    shape: WidgetStateProperty.all<BeveledRectangleBorder>(
+      BeveledRectangleBorder(
+        borderRadius: BorderRadiusGeometry.all(Radius.circular(5.0)
+        ),
+      ),
+    ),
+    maximumSize: WidgetStateProperty.all<Size>(
+    Size(
+        screenWidth *.8, screenHeight*.2
+    ),
+  )
+);
+final defaultButtonTextStyle = TextStyle(
+  fontSize: 25,
+  fontWeight: FontWeight.bold,
+  color: Colors.black,
+);
+
+final lightButtonStyle = ButtonStyle(
+  backgroundColor: WidgetStateProperty.all<Color>(
+    Color(0xFFDDB892)
+  ),
+  shape: WidgetStateProperty.all<BeveledRectangleBorder>(
+      BeveledRectangleBorder(
+      borderRadius: BorderRadiusGeometry.zero,
+    ),
+  )
+);
+final lightButtonTextStyle = TextStyle(
+  color: Colors.black,
+  fontSize: 20,
+  fontWeight: FontWeight.bold,
+);
 
 //Creates a user variable to test out the
 //TODO: change this to only include the user gotten from an API call to the local database.
@@ -61,6 +101,7 @@ class MyApp extends StatelessWidget {
       home: MyHomePage(title: title, books: b,),
       routes: {
         '/AddBook': (context) => const AddBook(title: title),
+        '/ScanBarcode': (context) => const ScanBarcode(title: title,),
       },
     );
   }
@@ -221,6 +262,49 @@ class Book{
     }
 
     return books;
+  }
+
+  static Future<Book> getBookFromJson(Map<String, dynamic> bookInfo) async{
+    Book b = Book();
+    http.Response resp;
+
+    String title = "";
+    String description = "";
+    String author = "";
+
+    String works = "";
+    Map<String, dynamic> workInfo = {};
+    try {
+      works = bookInfo['works'][0]['key'].toString().substring('/works/'.length);
+
+      resp = await getWorkInfo(works);
+
+      if (resp.statusCode != 200){
+        return b;
+      }
+
+      workInfo = jsonDecode(resp.body);
+    }catch(_){
+      return b;
+    }
+
+    try{
+      title = workInfo['title'];
+    }catch(_){
+      title = "";
+    }
+
+    try {
+      description = workInfo['description']['value'];
+    }catch(_){
+      description = "";
+    }
+
+    b.setTitle(title);
+    b.setDescription(description);
+    b.setAuthor(author);
+
+    return b;
   }
 
   //Normal setters to set the title, genre, author, description, availability, isbn, and owner.
@@ -722,6 +806,9 @@ class _MyHomePageState extends State<MyHomePage> {
     //Creates the title with the current user's name.
     String title = widget.title;
     title += " - ${user._getUser()}";
+
+    screenWidth = MediaQuery.of(context).size.width;
+    screenHeight = MediaQuery.of(context).size.height;
 
     if (filteredBooks.isEmpty && widget.books.isEmpty) {
       _clearFilterInputs();
@@ -1308,10 +1395,14 @@ class _MyHomePageState extends State<MyHomePage> {
               )
             ),
             ElevatedButton(
-                onPressed: (){
-                  Navigator.pushNamed(context, '/AddBook');
-                },
-                child: Text("Add Books")
+              style: defaultButtonStyle,
+              onPressed: (){
+                Navigator.pushNamed(context, '/AddBook');
+              },
+              child: Text(
+                "Add Book",
+                style: defaultButtonTextStyle,
+              )
             ),
           ],
         )
@@ -1406,13 +1497,7 @@ class HamburgerMenu extends StatelessWidget {
               //Sets the background color, makes the
               //buttons not round, and ensures they are
               //all the same size.
-              style: TextButton.styleFrom(
-                backgroundColor: Color(0xFF9C6644),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.zero,
-                ),
-                minimumSize: menuButtonSize,
-              ),
+              style: defaultButtonStyle,
 
               //Button logic when it's pressed
               onPressed: () {
@@ -1425,11 +1510,7 @@ class HamburgerMenu extends StatelessWidget {
 
                 //This sets the font size, weight, and color
                 //of the text on the button.
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF000000),
-                ),
+                style: defaultButtonTextStyle,
               ),
             ),
 
@@ -1441,24 +1522,16 @@ class HamburgerMenu extends StatelessWidget {
               //Sets the background color, makes the
               //buttons not round, and ensures they are
               //all the same size.
-              style: TextButton.styleFrom(
-                backgroundColor: Color(0xFF9C6644),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.zero,
-                ),
-                minimumSize: menuButtonSize,
-              ),
-              onPressed: () {},
+              style: defaultButtonStyle,
+              onPressed: () {
+                Navigator.pushNamed(context, '/ScanBarcode');
+              },
               child: Text(
                 "Scan Barcode",
 
                 //This sets the font size, weight, and color
                 //of the text on the button.
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF000000),
-                ),
+                style: defaultButtonTextStyle,
               ),
             ),
 
@@ -1470,13 +1543,7 @@ class HamburgerMenu extends StatelessWidget {
               //Sets the background color, makes the
               //buttons not round, and ensures they are
               //all the same size.
-              style: TextButton.styleFrom(
-                backgroundColor: Color(0xFF9C6644),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.zero,
-                ),
-                minimumSize: menuButtonSize,
-              ),
+              style: defaultButtonStyle,
               onPressed: () {
                 Navigator.pushNamed(context, "/AddBook");
               },
@@ -1485,11 +1552,7 @@ class HamburgerMenu extends StatelessWidget {
 
                 //This sets the font size, weight, and color
                 //of the text on the button.
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF000000),
-                ),
+                style: defaultButtonTextStyle,
               ),
             ),
           ],

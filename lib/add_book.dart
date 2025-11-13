@@ -120,10 +120,6 @@ class AddBookState extends State<AddBook>{
     currentBook = Book();
     String isbn = _isbn.text;
 
-    String title = "";
-    String description = "";
-    String author = "";
-
     http.Response resp = await getBook(isbn);
 
     if (resp.statusCode != 200){
@@ -132,41 +128,9 @@ class AddBookState extends State<AddBook>{
 
     Map<String, dynamic> bookInfo = jsonDecode(resp.body);
 
-    Book b = Book();
 
-    String works = "";
-    Map<String, dynamic> workInfo = {};
-    try {
-      works = bookInfo['works'][0]['key'].toString().substring('/works/'.length);
 
-      resp = await getWorkInfo(works);
-
-      if (resp.statusCode != 200){
-        return;
-      }
-
-      workInfo = jsonDecode(resp.body);
-    }catch(_){
-      return;
-    }
-
-    try{
-      title = workInfo['title'];
-    }catch(_){
-      title = "";
-    }
-
-    try {
-      description = workInfo['description']['value'];
-    }catch(_){
-      description = "";
-    }
-
-    b.setTitle(title);
-    b.setDescription(description);
-    b.setAuthor(author);
-
-    currentBook = b;
+    currentBook = await Book.getBookFromJson(bookInfo);
   }
 
   final TextEditingController _authorName = TextEditingController();
@@ -234,24 +198,17 @@ class AddBookState extends State<AddBook>{
           children: <Widget>[
             SizedBox(height: boxSpacing,),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF9C6644),
-                shape: const BeveledRectangleBorder(
-                  borderRadius: BorderRadiusGeometry.all(Radius.circular(5.0)),
-                ),
-                maximumSize: Size(screenWidth*.8, screenHeight*.2),
-              ),
+              style: defaultButtonStyle,
               onPressed: (){
-
+                Navigator.pushNamed(
+                  context,
+                  '/ScanBarcode'
+                );
               },
               child: Text(
                 "Don't Want to Enter Manually?\nScan Barcode",
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+                style: defaultButtonTextStyle,
               )
             ),
             SizedBox(height: boxSpacing,),
@@ -332,12 +289,7 @@ class AddBookState extends State<AddBook>{
                   ),
                   SizedBox(height: screenHeight * .3,),
                   TextButton(
-                    style: TextButton.styleFrom(
-                      backgroundColor: Color(0xFFDDB892),
-                      shape: const BeveledRectangleBorder(
-                        borderRadius: BorderRadiusGeometry.zero,
-                      ),
-                    ),
+                    style: lightButtonStyle,
                     onPressed: () {
                       showModalBottomSheet(
                         context: context,
@@ -451,11 +403,7 @@ class AddBookState extends State<AddBook>{
                     },
                     child: Text(
                       "Don't Have the ISBN?",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: lightButtonTextStyle,
                     ),
                   )
                 ],
