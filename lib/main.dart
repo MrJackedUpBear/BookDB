@@ -16,9 +16,11 @@ const subHeadingFontSize = 25.0;
 const bookFontSize = 20.0;
 const menuButtonSize = Size(246, 53);
 
+//Initializes the screen width and screen height variables that will be used later...
 double screenWidth = 0.0;
 double screenHeight = 0.0;
 
+//Creates a default buttons tyle for easy button styling
 final defaultButtonStyle = ButtonStyle(
     backgroundColor: WidgetStateProperty.all<Color>(Color(0xFF9C6644)),
     shape: WidgetStateProperty.all<BeveledRectangleBorder>(
@@ -33,12 +35,15 @@ final defaultButtonStyle = ButtonStyle(
     ),
   )
 );
+
+//Creates a default button text style for easy button text styling
 final defaultButtonTextStyle = TextStyle(
   fontSize: 25,
   fontWeight: FontWeight.bold,
   color: Colors.black,
 );
 
+//Creates a light button style for lighter colored buttons
 final lightButtonStyle = ButtonStyle(
   backgroundColor: WidgetStateProperty.all<Color>(
     Color(0xFFDDB892)
@@ -49,6 +54,8 @@ final lightButtonStyle = ButtonStyle(
     ),
   )
 );
+
+//Creates a light button text style for lighter colored buttons
 final lightButtonTextStyle = TextStyle(
   color: Colors.black,
   fontSize: 20,
@@ -59,11 +66,12 @@ final lightButtonTextStyle = TextStyle(
 //TODO: change this to only include the user gotten from an API call to the local database.
 User user = User("Bob");
 
-//generates a temporary list of books for testing
+//Initializes an empty temp books list that will be used until we set up API calls.
 //TODO: change this to only include books gotten from an API call to the local database.
 List<Book> tempBooks = [
   ];
 
+//generates a temporary list of books for testing
 //Book("Super long title that probably won't fit on the thingamabob", "", "", "", "Unavailable", "", "Jo"),
 //   Book("Harry Potter and the Sorcerer's Stone", "Fantasy", "J. K. Rowling", "This is a harry potter book.", "Available", "", "Jim"),
 //   Book("Harry Potter and the Prisoner of Azkaban", "Fantasy", "J. K. Rowling", "", "", "", "Bob"),
@@ -78,10 +86,12 @@ List<Book> tempBooks = [
 //   Book("Title11", "", "i", "", "", "", "Bob"),
 //   Book("Title12", "", "j", "", "", "", "Bob")
 
+//This is the main function that starts the app.
 void main() {
   runApp(const MyApp());
 }
 
+//This is a my app class that creates a stateless widget with a title.
 class MyApp extends StatelessWidget {
   static const title = "Book DB";
   const MyApp({super.key});
@@ -114,6 +124,7 @@ class MyHomePage extends StatefulWidget {
   //sets the title.
   final String title;
 
+  //Sets the list of books to show
   final List<Book> books;
 
   //Creates a homepage state.
@@ -157,17 +168,24 @@ class Book{
   var _image = "";
 
   //Time complexity is about O(nlog(n))
+  //Gets a list of books from a JSON object
   static Future<List<Book>> getBooksFromJson(List<dynamic> json) async {
+    //Initializes the book list that we will return
     List<Book> books = [];
 
+    //Assigns the length of the json to length
     int length = json.length;
 
+    //Iterates through the JSON. Time complexity of O(N) where N is the length of the JSON
     for (int i = 0; i < length; i++){
+      //Initializes our title, author, isbn, and description
       String title = "";
       String author = "";
       String isbn = "";
       String description = "";
 
+      //Does a try catch for author and title in case the json does not contain these
+      //It tries to assign author and title to the values in the JSON, if it fails it just makes them empty strings
       try{
         author = json[i]['author_name'][0];
       }catch(_){
@@ -180,28 +198,40 @@ class Book{
         title = "";
       }
 
+      //This is a try catch to get the isbn for the book
       try{
+        //Creates a dynamic list of ids from the json['ia'] map
         List<dynamic> id = json[i]['ia'];
 
+        //This sorts the ids to allow for binary search of the isbn
         id.sort((a, b) => a.toString().compareTo(b.toString()));
 
+        //Stores the number of identifiers in an int identifiers
         int identifiers = id.length;
 
+        //Initializes a found value boolean so we can iterate until we find the value
         bool foundVal = false;
 
         int start = 0;
         int end = identifiers;
 
         //binary search to find the isbn in each book. O(log(n))
+        //Loops until we find the value we want\
+        //TODO: This code is kinda useless right now. We already do another API call to get an ISBN, so we don't need this...
         while (!foundVal){
+          //If our start value is less than the end value, exit the while loop.
+          //This means we reached the end of our list
           if (start > end){
             break;
           }
 
+          //Creates a mid point from the start and end by adding them together and integer dividing by 2
           int mid = (start + end) ~/ 2;
 
+          //Compares 'isbn_' to the current id from the start of the string to the length of 'isbn_'
           int comparison = 'isbn_'.compareTo(id[mid].toString().substring(0, 'isbn_'.length));
 
+          //Checks the comparison value. If it is 0, we found it! If it is greater than zero, we need to search the right side. Otherwise, we need to search the left side.
           if (comparison == 0){
             isbn = id[mid].toString().substring('isbn_'.length);
             foundVal = true;
@@ -211,10 +241,12 @@ class Book{
             end = mid - 1;
           }
         }
+      //If any of this fails, set isbn to an empty string
       }catch(_){
         isbn = "";
       }
 
+      //Initializes a cover edition variable to try and get the cover edition
       String coverEdition = "";
 
       try{
@@ -224,11 +256,16 @@ class Book{
         coverEdition = "";
       }
 
+      //Currently this does an api call to get more book info with the cover edition found.
+      //TODO: Change this to check if coverEdition is not empty before doing an API call
       http.Response resp = await getExtraBookInfo(coverEdition);
 
+      //If the reponse indicates success, start finding the info
       if (resp.statusCode == 200 && coverEdition.isNotEmpty){
+        //Gets a map with a string and dynamic variable
         Map<String, dynamic> extraBookInfo = jsonDecode(resp.body);
 
+        //Tries to set the isbn and description, if it fails it will set them to empty strings
         try{
           isbn = extraBookInfo['isbn13'].toString();
         }catch(_){
@@ -251,6 +288,7 @@ class Book{
         }
       }
 
+      //Makes sure that we have an ISBN before adding the book to the final list
       if (isbn.isNotEmpty){
         Book b = Book();
         b.setTitle(title);
@@ -264,30 +302,41 @@ class Book{
     return books;
   }
 
+  //Gets a book from a json object
   static Future<Book> getBookFromJson(Map<String, dynamic> bookInfo) async{
+    //Initializes our book and response variables
     Book b = Book();
     http.Response resp;
 
+    //Initializes our title, description, and author variables
     String title = "";
     String description = "";
     String author = "";
 
+    //Initializes our works and workInfo variables
     String works = "";
     Map<String, dynamic> workInfo = {};
+
+    //This try-catch block tries to get the work info and then storing that in the work info variable above
     try {
+      //This gets the works id by finding works in the json, getting the first element, and then substringing it to get only the id
       works = bookInfo['works'][0]['key'].toString().substring('/works/'.length);
 
+      //Make an API call to get the work info
       resp = await getWorkInfo(works);
 
+      //If it is a bad response, just return
       if (resp.statusCode != 200){
         return b;
       }
 
+      //Set the work info to the decodes JSON response
       workInfo = jsonDecode(resp.body);
     }catch(_){
       return b;
     }
 
+    //Tries to set the title and description. If it fails, set them to empty strings
     try{
       title = workInfo['title'];
     }catch(_){
@@ -300,6 +349,9 @@ class Book{
       description = "";
     }
 
+    //TODO: Get author information and store it in the author variable
+
+    //Sets the title, description and author for the book and returns it
     b.setTitle(title);
     b.setDescription(description);
     b.setAuthor(author);
@@ -528,6 +580,7 @@ class _MyHomePageState extends State<MyHomePage> {
   //show, or if all books show.
   //The show clear filter button determines whether the button to clear
   //the filter is shown.
+  //The search list variable determines whether the add book button will show in the book info
   bool _personalLibrary = false;
   bool _showClearFilterButton = false;
   bool _searchList = false;
@@ -539,6 +592,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int genreSort = 0;
   int reviewSort = 0;
 
+  //Initializes a books variable to the current books and initializes a filtered books variable for later
   List<Book> books = getCurrentBooks();
   List<Book> filteredBooks = [];
 
@@ -807,9 +861,15 @@ class _MyHomePageState extends State<MyHomePage> {
     String title = widget.title;
     title += " - ${user._getUser()}";
 
+    //Stores the width and height of the media device in the screenWidth and screenHeight variables initialized above respectively
     screenWidth = MediaQuery.of(context).size.width;
     screenHeight = MediaQuery.of(context).size.height;
 
+    //Some simple checks to see if we have any filter applied and if there are any books passed through the MainPage
+    //If neither are true, this will clear all the filter inputs
+    //The else if checks to make sure there is no filter and we have books being passed to the MainPage
+    //If these are true, it will set the filteredBooks (AKA the ones that get listed on the main page) to be the books passed to the MainPage
+    //Then it shows the clear filter button, and sets the search list variable to true
     if (filteredBooks.isEmpty && widget.books.isEmpty) {
       _clearFilterInputs();
     }else if(filteredBooks.isEmpty && widget.books.isNotEmpty){
@@ -892,7 +952,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       //left-hand side drawer or the hamburger menu drawer
       drawer: Drawer(
-        //Lists all items in the menu.
+        //Utilizes the hamburger menu widget created below to display the hamburger menu
         child: HamburgerMenu(title: title),
       ),
 
@@ -1339,7 +1399,8 @@ class _MyHomePageState extends State<MyHomePage> {
       //Sets the background color of the main part of the page.
       backgroundColor: defaultPageColor,
 
-      //Displays all books on the page.
+      //Checks if we have any books. If we do it will display all books on the page
+      //Otherwise, it will display text saying there are no books, and an add book button
       body: filteredBooks.isNotEmpty?
       ListView.builder(
         itemCount: filteredBooks.length, // The total number of items
@@ -1384,9 +1445,11 @@ class _MyHomePageState extends State<MyHomePage> {
             );
         },
       ):
+      //This shows the add book button in case we have none 
       Center(
         child: Column(
           children: [
+            //No books available text
             Text(
               "No books available...",
               style: TextStyle(
@@ -1394,7 +1457,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 fontWeight: FontWeight.bold,
               )
             ),
+            //Add book button
             ElevatedButton(
+              //Sets the style to the default button style and navigates to the add book page on click
               style: defaultButtonStyle,
               onPressed: (){
                 Navigator.pushNamed(context, '/AddBook');
@@ -1428,13 +1493,17 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+//Separation of hamburger menu to allow code reusability
 class HamburgerMenu extends StatelessWidget {
   const HamburgerMenu({super.key, required this.title});
 
+  //This hamburger menu only requires a title
   final String title;
 
+  //Main hamburger menu stuff below
   @override
   Widget build(BuildContext context) {
+    //Sets our global box spacing variable to the screenheight * .05
     boxSpacing = MediaQuery.of(context).size.height * .05;
 
     return Scaffold(
