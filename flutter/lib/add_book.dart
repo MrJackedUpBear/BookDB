@@ -200,9 +200,9 @@ class AddBookState extends State<AddBook>{
             ElevatedButton(
               style: defaultButtonStyle,
               onPressed: (){
-                Navigator.pushNamed(
-                  context,
-                  '/ScanBarcode'
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/ScanBarcode',
+                      (Route<dynamic> route) => false,
                 );
               },
               child: Text(

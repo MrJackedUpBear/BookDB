@@ -174,9 +174,9 @@ class _ScanBarcodeState extends State<ScanBarcode>{
               ElevatedButton(
                 style: defaultButtonStyle,
                 onPressed: (){
-                  Navigator.pushNamed(
-                    context,
-                    '/AddBook'
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/AddBook',
+                      (Route<dynamic> route) => false,
                   );
                 },
                 child: Text(
