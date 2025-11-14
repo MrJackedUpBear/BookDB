@@ -20,7 +20,7 @@ const menuButtonSize = Size(246, 53);
 double screenWidth = 0.0;
 double screenHeight = 0.0;
 
-//Creates a default buttons tyle for easy button styling
+//Creates a default buttons style for easy button styling
 final defaultButtonStyle = ButtonStyle(
     backgroundColor: WidgetStateProperty.all<Color>(Color(0xFF9C6644)),
     shape: WidgetStateProperty.all<BeveledRectangleBorder>(
