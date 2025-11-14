@@ -80,7 +80,11 @@ class _BookInfoState extends State<BookInfo>{
                   //Opens the left-hand drawer if the button is
                   //pressed
                   onPressed: (){
-                    Navigator.pop(context);
+                    if (Navigator.of(context).canPop()){
+                      Navigator.pop(context);
+                    }else{
+                      Navigator.pushReplacementNamed(context, '/');
+                    }
                   },
                 ),
               ),
@@ -135,8 +139,7 @@ class _BookInfoState extends State<BookInfo>{
                         //If pressed, it will add the book to the list and navigate to the main page
                         onPressed: (){
                           addBookToList(book);
-
-                          Navigator.pushNamed(context, '/');
+                          Navigator.pushReplacementNamed(context, '/');
                         },
 
                         //Add book text with the light button text styel global variable

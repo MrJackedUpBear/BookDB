@@ -1462,7 +1462,10 @@ class _MyHomePageState extends State<MyHomePage> {
               //Sets the style to the default button style and navigates to the add book page on click
               style: defaultButtonStyle,
               onPressed: (){
-                Navigator.pushNamed(context, '/AddBook');
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/AddBook',
+                      (Route<dynamic> route) => false,
+                );
               },
               child: Text(
                 "Add Book",
@@ -1570,7 +1573,10 @@ class HamburgerMenu extends StatelessWidget {
 
               //Button logic when it's pressed
               onPressed: () {
-                Navigator.pushNamed(context, '/');
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/',
+                  (Route<dynamic> route) => false,
+                );
               },
 
               //The text on the button
@@ -1593,7 +1599,10 @@ class HamburgerMenu extends StatelessWidget {
               //all the same size.
               style: defaultButtonStyle,
               onPressed: () {
-                Navigator.pushNamed(context, '/ScanBarcode');
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/ScanBarcode',
+                      (Route<dynamic> route) => false,
+                );
               },
               child: Text(
                 "Scan Barcode",
@@ -1614,7 +1623,10 @@ class HamburgerMenu extends StatelessWidget {
               //all the same size.
               style: defaultButtonStyle,
               onPressed: () {
-                Navigator.pushNamed(context, "/AddBook");
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/AddBook',
+                  (Route<dynamic> route) => false,
+                );
               },
               child: Text(
                 "Add Book",

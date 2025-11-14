@@ -264,15 +264,15 @@ class AddBookState extends State<AddBook>{
                           await getBookFromISBN(context);
 
                           if (context.mounted && currentBook.getTitle().isNotEmpty){
-                            Navigator.push(
-                              context,
+                            Navigator.of(context).pushAndRemoveUntil(
                               MaterialPageRoute(
-                                builder: (context) => BookInfo(
-                                  title: title,
-                                  book: currentBook,
-                                  addBook: true,
-                                )
-                              )
+                                  builder: (context) => BookInfo(
+                                    title: "",
+                                    book: currentBook,
+                                    addBook: true,
+                                  )
+                              ),
+                                  (Route<dynamic> route) => false,
                             );
                           }
                         },
@@ -368,14 +368,14 @@ class AddBookState extends State<AddBook>{
 
                                         if (context.mounted){
                                           Navigator.pop(context);
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) => MyHomePage(
-                                                    title: title,
-                                                    books: foundBooks,
-                                                  )
-                                              )
+                                          Navigator.of(context).pushAndRemoveUntil(
+                                            MaterialPageRoute(
+                                                builder: (context) => MyHomePage(
+                                                  title: title,
+                                                  books: foundBooks,
+                                                )
+                                            ),
+                                                (Route<dynamic> route) => false,
                                           );
                                         }
                                       },

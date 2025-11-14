@@ -141,15 +141,15 @@ class _ScanBarcodeState extends State<ScanBarcode>{
                         _loadBook(context, result.barcodes);
 
                         if (context.mounted && currentBook.getTitle().isNotEmpty){
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => BookInfo(
-                                    title: "",
-                                    book: currentBook,
-                                    addBook: true,
-                                  )
-                              )
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(
+                                builder: (context) => BookInfo(
+                                  title: "",
+                                  book: currentBook,
+                                  addBook: true,
+                                )
+                            ),
+                            (Route<dynamic> route) => false,
                           );
                           barcodeScanner.stop();
                         }
