@@ -1,4 +1,4 @@
-package win.servername.entity;
+package win.servername.entity.book;
 
 public class Review {
 }

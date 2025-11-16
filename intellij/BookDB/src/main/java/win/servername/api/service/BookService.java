@@ -1,7 +1,7 @@
 package win.servername.api.service;
 
 import win.servername.api.repository.BookRepository;
-import win.servername.entity.Book;
+import win.servername.entity.book.Book;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

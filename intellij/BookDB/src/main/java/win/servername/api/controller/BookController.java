@@ -1,7 +1,7 @@
 package win.servername.api.controller;
 
 import win.servername.api.service.BookService;
-import win.servername.entity.Book;
+import win.servername.entity.book.Book;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

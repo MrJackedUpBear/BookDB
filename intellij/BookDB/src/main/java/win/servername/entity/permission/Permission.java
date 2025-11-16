@@ -1,4 +1,4 @@
-package win.servername.entity;
+package win.servername.entity.permission;
 
 public class Permission {
 }

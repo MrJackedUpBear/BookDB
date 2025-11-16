@@ -1,4 +1,4 @@
-package win.servername.entity;
+package win.servername.entity.auth;
 
 public class UserRole {
 }
