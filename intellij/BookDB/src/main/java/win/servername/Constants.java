@@ -1,0 +1,10 @@
+package win.servername;
+
+public class Constants {
+    public static final int TITLE_LENGTH = 80;
+    public static final int ISBN_LENGTH = 13;
+    public static final int LANGUAGE_LENGTH = 40;
+    public static final int STATUS_LENGTH = 15;
+    public static final int NAME_LENGTH = 30;
+    public static final int AVAILABILITY_LENGTH = 15;
+}

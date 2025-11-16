@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 
 import java.util.Date;
 
+import static win.servername.Constants.*;
+
 @Entity
 @Table(name = "Book")
 public class Book {
@@ -12,10 +14,10 @@ public class Book {
     private Long bookId;
 
     @Column(nullable = false, unique = true)
-    private String isbn;
+    private char[] isbn = new char[ISBN_LENGTH];
 
     @Column(nullable = false)
-    private String title;
+    private char[] title = new char[TITLE_LENGTH];
 
     @Column(nullable = false)
     private String description;
@@ -30,19 +32,19 @@ public class Book {
     private String publisher;
 
     @Column(nullable = false)
-    private String language;
+    private char[] language = new char[LANGUAGE_LENGTH];
 
-    @Column()
+    @Column(nullable = false)
     private String imageLoc;
 
     //Getters
     public long getBookId(){
         return bookId;
     }
-    public String getIsbn(){
+    public char[] getIsbn(){
         return isbn;
     }
-    public String getTitle(){
+    public char[] getTitle(){
         return title;
     }
     public String getDescription(){
@@ -57,7 +59,7 @@ public class Book {
     public String getPublisher(){
         return publisher;
     }
-    public String getLanguage(){
+    public char[] getLanguage(){
         return language;
     }
     public String getImageLoc(){
@@ -66,12 +68,12 @@ public class Book {
 
     //Setters
     public void setBookId(long bookId){this.bookId = bookId;}
-    public void setIsbn(String isbn){this.isbn = isbn;}
-    public void setTitle(String title){this.title = title;}
+    public void setIsbn(char[] isbn){this.isbn = isbn;}
+    public void setTitle(char[] title){this.title = title;}
     public void setDescription(String description){this.description = description;}
     public void setAuthor(String author){this.author = author;}
     public void setPublishDate(Date publishDate){this.publishDate = publishDate;}
     public void setPublisher(String publisher){this.publisher = publisher;}
-    public void setLanguage(String language){this.language = language;}
+    public void setLanguage(char[] language){this.language = language;}
     public void setImageLoc(String imageLoc){this.imageLoc = imageLoc;}
 }

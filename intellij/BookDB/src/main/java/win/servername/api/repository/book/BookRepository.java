@@ -1,4 +1,4 @@
-package win.servername.api.repository;
+package win.servername.api.repository.book;
 
 import win.servername.entity.book.Book;
 import org.springframework.data.jpa.repository.JpaRepository;
