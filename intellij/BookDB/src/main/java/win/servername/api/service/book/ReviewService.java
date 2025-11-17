@@ -3,8 +3,10 @@ package win.servername.api.service.book;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import win.servername.api.repository.book.ReviewRepository;
+import win.servername.entity.book.Book;
 import win.servername.entity.book.Review;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -24,6 +26,9 @@ public class ReviewService {
     //Read
     public Optional<Review> getReview(long reviewId){
         return reviewRepository.findById(reviewId);
+    }
+    public List<Review> getReviewsByBook(Book book){
+        return reviewRepository.findAllByBook(book);
     }
 
     //Update

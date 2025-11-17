@@ -26,8 +26,8 @@ public class BookAvailabilityService {
     }
 
     //Read
-    public List<BookAvailability> getAvailabilityByBookId(long bookId){
-        return bookAvailabilityRepository.findByBookId(bookId);
+    public Optional<BookAvailability> getAvailabilityByBookAvailabilityId(BookAvailabilityId bookAvailabilityId){
+        return bookAvailabilityRepository.findById((long) bookAvailabilityId.hashCode());
     }
 
     //Update
