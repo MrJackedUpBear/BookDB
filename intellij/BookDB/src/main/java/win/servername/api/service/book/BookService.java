@@ -17,10 +17,12 @@ public class BookService {
         this.bookRepository = bookRepository;
     }
 
+    //Create
     public Book saveBook(Book book){
         return bookRepository.save(book);
     }
 
+    //Read
     public List<Book> getBooks(){
         return bookRepository.findAll();
     }
@@ -33,6 +35,7 @@ public class BookService {
         return bookRepository.findByIsbn(isbn);
     }
 
+    //Update
     public Book updateBook(long bookId, Book updatedBook){
         Optional<Book> existingBook = bookRepository.findById(bookId);
 
@@ -52,6 +55,7 @@ public class BookService {
         }
     }
 
+    //Delete
     public void deleteBook(long bookId){
         bookRepository.deleteById(bookId);
     }

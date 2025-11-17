@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/book")
 public class BookController {
     private final BookService bookService;
 
@@ -20,7 +20,7 @@ public class BookController {
         this.bookService = bookService;
     }
 
-    @PostMapping("/book")
+    @PostMapping("/add")
     public ResponseEntity<Book> saveBook(@RequestBody Book book){
         Book newBook = bookService.saveBook(book);
         return ResponseEntity.ok(newBook);
@@ -38,13 +38,13 @@ public class BookController {
         return ResponseEntity.ok(output);
     }
 
-    @GetMapping("/book/id/{bookId}")
+    @GetMapping("/id/{bookId}")
     public ResponseEntity<Book> getBookByBookId(@PathVariable long bookId){
         Optional<Book> book = bookService.getBookById(bookId);
         return book.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/book/isbn/{isbn}")
+    @GetMapping("/isbn/{isbn}")
     public ResponseEntity<Book> getBookByIsbn(@PathVariable String isbn){
         Optional<Book> book = bookService.getBookByIsbn(isbn);
         return book.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
