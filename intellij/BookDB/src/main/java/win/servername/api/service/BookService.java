@@ -1,4 +1,4 @@
-package win.servername.api.service.book;
+package win.servername.api.service;
 
 import win.servername.api.repository.auth.UserRepository;
 import win.servername.api.repository.book.BookAvailabilityRepository;
@@ -6,7 +6,7 @@ import win.servername.api.repository.book.BookRepository;
 import win.servername.api.repository.book.ReviewRepository;
 import win.servername.entity.bookDTO.BookAvailabilityDTO;
 import win.servername.entity.bookDTO.BookDTO;
-import win.servername.entity.userDTO.UserDTO;
+import win.servername.entity.bookDTO.UserDTO_ForBook;
 import win.servername.entity.auth.User;
 import win.servername.entity.book.Book;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +43,9 @@ public class BookService {
     public BookDTO saveBook(BookDTO bookDTOInput){
         Optional<Book> optionalBook = bookRepository.findByIsbn(bookDTOInput.getIsbn());
 
-        UserDTO userDTO = bookDTOInput.getBookAvailability().getFirst().getUser();
+        UserDTO_ForBook userDTOForBook = bookDTOInput.getBookAvailability().getFirst().getUser();
 
-        Optional<User> optionalUser = userRepository.findByUsername(userDTO.getUsername());
+        Optional<User> optionalUser = userRepository.findByUsername(userDTOForBook.getUsername());
 
         if (optionalUser.isEmpty()){
             throw new RuntimeException("User not found");
@@ -57,7 +57,6 @@ public class BookService {
         userRepository.save(user);
 
         if (optionalBook.isEmpty()){
-            //TODO: Need to either do BookAvailability or this and save to database...
             Book book = bookRepository.save(convertBookDTO(bookDTOInput));
 
             BookAvailability bookAvailability = new BookAvailability();
@@ -123,8 +122,8 @@ public class BookService {
     }
 
     //Read
-    public List<BookDTO> getBooks(UserDTO userDTO){
-        Optional<User> optionalUser = userRepository.findByUsername(userDTO.getUsername());
+    public List<BookDTO> getBooks(UserDTO_ForBook userDTOForBook){
+        Optional<User> optionalUser = userRepository.findByUsername(userDTOForBook.getUsername());
 
         if (optionalUser.isEmpty()){
             throw new RuntimeException("User not found");
@@ -160,9 +159,9 @@ public class BookService {
         return bookRepository.findByIsbn(isbn);
     }
 
-    public Optional<Review> getReviewWithUserAndBook(UserDTO userDTO, BookDTO bookDTO){
+    public Optional<Review> getReviewWithUserAndBook(UserDTO_ForBook userDTOForBook, BookDTO bookDTO){
         Book book = convertBookDTO(bookDTO);
-        User user = convertUserDTO(userDTO);
+        User user = convertUserDTO(userDTOForBook);
 
         return reviewRepository.findByBookAndUser(book, user);
     }
@@ -237,8 +236,8 @@ public class BookService {
     }
 
     //Converter methods
-    User convertUserDTO(UserDTO userDTO){
-        Optional<User> optionalUser = userRepository.findByUsername(userDTO.getUsername());
+    User convertUserDTO(UserDTO_ForBook userDTOForBook){
+        Optional<User> optionalUser = userRepository.findByUsername(userDTOForBook.getUsername());
 
         if (optionalUser.isPresent()){
             return optionalUser.get();
@@ -247,29 +246,29 @@ public class BookService {
         }
     }
 
-    UserDTO convertUser(User user){
-        UserDTO userDTO = new UserDTO();
+    UserDTO_ForBook convertUser(User user){
+        UserDTO_ForBook userDTOForBook = new UserDTO_ForBook();
 
-        userDTO.setUsername(user.getUsername());
-        userDTO.setNumOwnedBooks(user.getNumOwnedBooks());
-        userDTO.setLastName(user.getLastName());
-        userDTO.setFirstName(user.getFirstName());
+        userDTOForBook.setUsername(user.getUsername());
+        userDTOForBook.setNumOwnedBooks(user.getNumOwnedBooks());
+        userDTOForBook.setLastName(user.getLastName());
+        userDTOForBook.setFirstName(user.getFirstName());
 
-        return userDTO;
+        return userDTOForBook;
     }
 
     BookAvailabilityDTO convertBookAvailabilityDTO(BookAvailability bookAvailability){
         BookAvailabilityDTO bookAvailabilityDTO = new BookAvailabilityDTO();
 
-        UserDTO userDTO = new UserDTO();
+        UserDTO_ForBook userDTOForBook = new UserDTO_ForBook();
         User user = bookAvailability.getBookAvailabilityId().getUser();
 
-        userDTO.setFirstName(user.getFirstName());
-        userDTO.setLastName(user.getLastName());
-        userDTO.setNumOwnedBooks(user.getNumOwnedBooks());
-        userDTO.setUsername(user.getUsername());
+        userDTOForBook.setFirstName(user.getFirstName());
+        userDTOForBook.setLastName(user.getLastName());
+        userDTOForBook.setNumOwnedBooks(user.getNumOwnedBooks());
+        userDTOForBook.setUsername(user.getUsername());
 
-        bookAvailabilityDTO.setUser(userDTO);
+        bookAvailabilityDTO.setUser(userDTOForBook);
         bookAvailabilityDTO.setAvailability(bookAvailability.getAvailability());
         bookAvailabilityDTO.setCount(bookAvailability.getBookAvailabilityId().getCount());
 

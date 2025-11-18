@@ -1,8 +1,8 @@
 package win.servername.api.controller;
 
-import win.servername.api.service.book.BookService;
+import win.servername.api.service.BookService;
 import win.servername.entity.bookDTO.BookDTO;
-import win.servername.entity.userDTO.UserDTO;
+import win.servername.entity.bookDTO.UserDTO_ForBook;
 import win.servername.entity.book.Book;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +40,7 @@ public class BookController {
 
     //Read
     @GetMapping("/books")
-    public ResponseEntity<HashMap<String, Object>> getBooks(@RequestBody UserDTO user){
+    public ResponseEntity<HashMap<String, Object>> getBooks(@RequestBody UserDTO_ForBook user){
         List<BookDTO> books = bookService.getBooks(user);
 
         HashMap<String, Object> output = new HashMap<>();
