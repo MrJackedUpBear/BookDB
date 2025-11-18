@@ -6,6 +6,7 @@ import win.servername.api.repository.book.BookRepository;
 import win.servername.api.repository.book.ReviewRepository;
 import win.servername.entity.bookDTO.BookAvailabilityDTO;
 import win.servername.entity.bookDTO.BookDTO;
+import win.servername.entity.bookDTO.ReviewDTO;
 import win.servername.entity.bookDTO.UserDTO_ForBook;
 import win.servername.entity.auth.User;
 import win.servername.entity.book.Book;
@@ -113,8 +114,8 @@ public class BookService {
         return bookDTOInput;
     }
 
-    public Review saveReview(Review review){
-        return reviewRepository.save(review);
+    public ReviewDTO saveReview(ReviewDTO review){
+        return convertReview(reviewRepository.save(convertReviewDTO(review)));
     }
 
     public BookAvailability saveBookAvailability(BookAvailability bookAvailability){
@@ -155,8 +156,15 @@ public class BookService {
         return bookRepository.findById(bookId);
     }
 
-    public Optional<Book> getBookByIsbn(String isbn){
-        return bookRepository.findByIsbn(isbn);
+    public BookDTO getBookByIsbn(String isbn){
+        Optional<Book> optionalBook = bookRepository.findByIsbn(isbn);
+        BookDTO book = new BookDTO();
+
+        if (optionalBook.isPresent()){
+            book = convertBook(optionalBook.get());
+        }
+
+        return book;
     }
 
     public Optional<Review> getReviewWithUserAndBook(UserDTO_ForBook userDTOForBook, BookDTO bookDTO){
@@ -309,5 +317,29 @@ public class BookService {
         bookDTO.setPublishDate(book.getPublishDate());
 
         return bookDTO;
+    }
+
+    Review convertReviewDTO(ReviewDTO reviewDTO){
+        Review review = new Review();
+
+        review.setBook(convertBookDTO(reviewDTO.getBook()));
+        review.setRating(reviewDTO.getRating());
+        review.setUser(convertUserDTO(reviewDTO.getUser()));
+        review.setTitle(reviewDTO.getTitle());
+        review.setDescription(reviewDTO.getDescription());
+
+        return review;
+    }
+
+    ReviewDTO convertReview(Review review){
+        ReviewDTO reviewDTO = new ReviewDTO();
+
+        reviewDTO.setBook(convertBook(review.getBook()));
+        reviewDTO.setDescription(review.getDescription());
+        reviewDTO.setRating(review.getRating());
+        reviewDTO.setTitle(review.getTitle());
+        reviewDTO.setUser(convertUser(review.getUser()));
+
+        return reviewDTO;
     }
 }

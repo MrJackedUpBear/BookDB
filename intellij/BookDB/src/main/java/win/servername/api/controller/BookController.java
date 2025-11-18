@@ -2,6 +2,7 @@ package win.servername.api.controller;
 
 import win.servername.api.service.BookService;
 import win.servername.entity.bookDTO.BookDTO;
+import win.servername.entity.bookDTO.ReviewDTO;
 import win.servername.entity.bookDTO.UserDTO_ForBook;
 import win.servername.entity.book.Book;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +34,8 @@ public class BookController {
     }
 
     @PostMapping("/review")
-    public ResponseEntity<Review> saveReview(@RequestBody Review review){
-        Review newReview = bookService.saveReview(review);
+    public ResponseEntity<ReviewDTO> saveReview(@RequestBody ReviewDTO review){
+        ReviewDTO newReview = bookService.saveReview(review);
         return ResponseEntity.ok(newReview);
     }
 
@@ -52,8 +53,12 @@ public class BookController {
     }
 
     @GetMapping("/isbn/{isbn}")
-    public ResponseEntity<Book> getBookByIsbn(@PathVariable String isbn){
-        Optional<Book> book = bookService.getBookByIsbn(isbn);
-        return book.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<BookDTO> getBookByIsbn(@PathVariable String isbn){
+        BookDTO book = bookService.getBookByIsbn(isbn);
+        return ResponseEntity.ok(book);
+    }
+
+    boolean verifyLogin(UserDTO_ForBook userDTOForBook){
+        return true;
     }
 }

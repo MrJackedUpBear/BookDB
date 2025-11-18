@@ -44,26 +44,32 @@ public class UserService {
     }
 
     //Create
+    //User
     public User saveUser(User user){
         return userRepository.save(user);
     }
 
+    //Refresh Token
     public RefreshToken saveRefreshToken(RefreshToken refreshToken){
         return refreshTokenRepository.save(refreshToken);
     }
 
+    //User Role
     public UserRole saveUserRole(UserRole userRole){
         return userRoleRepository.save(userRole);
     }
 
+    //Permission
     public Permission savePermission(Permission permission){
         return permissionRepository.save(permission);
     }
 
+    //Role Permission
     public RolePermission saveRolePermission(RolePermission rolePermission){
         return rolePermissionRepository.save(rolePermission);
     }
 
+    //Role
     public Role saveRole(Role role){
         return roleRepository.save(role);
     }
