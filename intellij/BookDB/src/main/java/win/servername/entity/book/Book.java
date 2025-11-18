@@ -13,11 +13,11 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long bookId;
 
-    @Column(nullable = false, unique = true)
-    private char[] isbn = new char[ISBN_LENGTH];
+    @Column(nullable = false, unique = true, length = ISBN_LENGTH)
+    private String isbn;
 
-    @Column(nullable = false)
-    private char[] title = new char[TITLE_LENGTH];
+    @Column(nullable = false, length = TITLE_LENGTH)
+    private String title;
 
     @Column(nullable = false)
     private String description;
@@ -31,8 +31,8 @@ public class Book {
     @Column(nullable = false)
     private String publisher;
 
-    @Column(nullable = false)
-    private char[] language = new char[LANGUAGE_LENGTH];
+    @Column(nullable = false, length = LANGUAGE_LENGTH)
+    private String language;
 
     @Column(nullable = false)
     private String imageLoc;
@@ -41,10 +41,10 @@ public class Book {
     public long getBookId(){
         return bookId;
     }
-    public char[] getIsbn(){
+    public String getIsbn(){
         return isbn;
     }
-    public char[] getTitle(){
+    public String getTitle(){
         return title;
     }
     public String getDescription(){
@@ -59,7 +59,7 @@ public class Book {
     public String getPublisher(){
         return publisher;
     }
-    public char[] getLanguage(){
+    public String getLanguage(){
         return language;
     }
     public String getImageLoc(){
@@ -68,12 +68,12 @@ public class Book {
 
     //Setters
     public void setBookId(long bookId){this.bookId = bookId;}
-    public void setIsbn(char[] isbn){this.isbn = isbn;}
-    public void setTitle(char[] title){this.title = title;}
+    public void setIsbn(String isbn){this.isbn = isbn;}
+    public void setTitle(String title){this.title = title;}
     public void setDescription(String description){this.description = description;}
     public void setAuthor(String author){this.author = author;}
     public void setPublishDate(Date publishDate){this.publishDate = publishDate;}
     public void setPublisher(String publisher){this.publisher = publisher;}
-    public void setLanguage(char[] language){this.language = language;}
+    public void setLanguage(String language){this.language = language;}
     public void setImageLoc(String imageLoc){this.imageLoc = imageLoc;}
 }

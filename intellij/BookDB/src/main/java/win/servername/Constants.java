@@ -8,4 +8,7 @@ public class Constants {
     public static final int NAME_LENGTH = 30;
     public static final int AVAILABILITY_LENGTH = 15;
     public static final String API_MAPPING = "/api/v1";
+
+    public static final String AVAILABLE = "Available";
+    public static final String UNAVAILABLE = "Unavailable";
 }

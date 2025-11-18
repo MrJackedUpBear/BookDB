@@ -3,6 +3,7 @@ package win.servername.api.service.permission;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import win.servername.api.repository.permission.PermissionRepository;
+import win.servername.entity.auth.User;
 import win.servername.entity.permission.Permission;
 
 import java.util.Optional;
@@ -47,4 +48,23 @@ public class PermissionService {
     public void deletePermission(long permissionId){
         permissionRepository.deleteById(permissionId);
     }
+
+    //Check Permissions
+    /*
+    boolean bookWritePermission(User user){
+
+    }
+
+    boolean bookReadPermission(User user){
+
+    }
+
+    boolean bookUpdatePermission(User user){
+
+    }
+
+    boolean bookDeletePermission(User user){
+
+    }
+     */
 }

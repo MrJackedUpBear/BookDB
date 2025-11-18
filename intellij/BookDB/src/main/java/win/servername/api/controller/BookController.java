@@ -1,8 +1,8 @@
 package win.servername.api.controller;
 
-import win.servername.api.service.book.BookAvailabilityService;
 import win.servername.api.service.book.BookService;
-import win.servername.api.service.book.ReviewService;
+import win.servername.entity.bookDTO.BookDTO;
+import win.servername.entity.userDTO.UserDTO;
 import win.servername.entity.book.Book;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,34 +19,29 @@ import static win.servername.Constants.API_MAPPING;
 @RequestMapping(API_MAPPING)
 public class BookController {
     private final BookService bookService;
-    //private final BookAvailabilityService bookAvailabilityService;
-    private final ReviewService reviewService;
 
     @Autowired
-    public BookController(
-            BookService bookService,
-            //BookAvailabilityService bookAvailabilityService,
-            ReviewService reviewService){
+    public BookController(BookService bookService){
         this.bookService = bookService;
-        //this.bookAvailabilityService = bookAvailabilityService;
-        this.reviewService = reviewService;
     }
 
+    //Create
     @PostMapping("/book")
-    public ResponseEntity<Book> saveBook(@RequestBody Book book){
-        Book newBook = bookService.saveBook(book);
+    public ResponseEntity<BookDTO> saveBook(@RequestBody BookDTO book){
+        BookDTO newBook = bookService.saveBook(book);
         return ResponseEntity.ok(newBook);
     }
 
     @PostMapping("/review")
     public ResponseEntity<Review> saveReview(@RequestBody Review review){
-        Review newReview = reviewService.saveReview(review);
+        Review newReview = bookService.saveReview(review);
         return ResponseEntity.ok(newReview);
     }
 
+    //Read
     @GetMapping("/books")
-    public ResponseEntity<HashMap<String, Object>> getBooks(){
-        List<Book> books = bookService.getBooks();
+    public ResponseEntity<HashMap<String, Object>> getBooks(@RequestBody UserDTO user){
+        List<BookDTO> books = bookService.getBooks(user);
 
         HashMap<String, Object> output = new HashMap<>();
 
@@ -54,17 +49,6 @@ public class BookController {
         output.put("books", books);
 
         return ResponseEntity.ok(output);
-    }
-
-    @GetMapping("/reviews")
-    public ResponseEntity<List<Review>> getReviews(@RequestBody Book book){
-        return ResponseEntity.ok(reviewService.getReviewsByBook(book));
-    }
-
-    @GetMapping("/id/{bookId}")
-    public ResponseEntity<Book> getBookByBookId(@PathVariable long bookId){
-        Optional<Book> book = bookService.getBookById(bookId);
-        return book.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/isbn/{isbn}")

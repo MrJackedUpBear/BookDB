@@ -6,10 +6,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import win.servername.entity.auth.User;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 @Embeddable
-public class BookAvailabilityId{
+public class BookAvailabilityId implements Serializable{
     @ManyToOne
     @JoinColumn(name = "UserId")
     private User user;
