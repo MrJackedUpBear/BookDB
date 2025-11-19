@@ -17,7 +17,13 @@ import win.servername.entity.permission.Role;
 import win.servername.entity.permission.RolePermission;
 import win.servername.entity.permission.RolePermissionId;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
+
+import static win.servername.Constants.*;
 
 @Service
 public class UserService {
@@ -47,6 +53,22 @@ public class UserService {
     //User
     public User saveUser(User user){
         return userRepository.save(user);
+    }
+
+    public int login(String username, String password){
+        Optional<User> optionalUser = userRepository.findByUsername(username);
+
+        if (optionalUser.isEmpty()){
+            return INCORRECT_USERNAME;
+        }
+
+        User user = optionalUser.get();
+
+        if (user.getPassword().equals(password)){
+            return SUCCESSFUL_LOGIN;
+        }else{
+            return INCORRECT_PASSWORD;
+        }
     }
 
     //Refresh Token
@@ -223,5 +245,31 @@ public class UserService {
 
     public void deleteRole(long roleId){
         roleRepository.deleteById(roleId);
+    }
+
+    public RefreshToken getRefreshToken(String username){
+        RefreshToken refreshToken = new RefreshToken();
+
+        Optional<User> optionalUser = userRepository.findByUsername(username);
+
+        if (optionalUser.isEmpty()){
+            return refreshToken;
+        }
+
+        User user = optionalUser.get();
+
+        refreshToken.setRefreshToken(generateRefreshToken());
+        refreshToken.setUser(user);
+        refreshToken.setDateProvisioned(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+        refreshToken.setExpiryDate(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).plusMonths(6).toInstant()));
+        refreshToken.setLastUsed(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
+
+        return refreshTokenRepository.save(refreshToken);
+    }
+
+    String generateRefreshToken(){
+        UUID uuid = UUID.randomUUID();
+
+        return uuid.toString();
     }
 }

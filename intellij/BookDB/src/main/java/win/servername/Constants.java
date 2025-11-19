@@ -11,4 +11,8 @@ public class Constants {
 
     public static final String AVAILABLE = "Available";
     public static final String UNAVAILABLE = "Unavailable";
+
+    public static final int SUCCESSFUL_LOGIN = 0;
+    public static final int INCORRECT_PASSWORD = 1;
+    public static final int INCORRECT_USERNAME = -1;
 }

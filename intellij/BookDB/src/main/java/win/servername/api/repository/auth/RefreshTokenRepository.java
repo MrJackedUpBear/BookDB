@@ -6,5 +6,4 @@ import win.servername.entity.auth.RefreshToken;
 
 @Repository
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
-
 }
