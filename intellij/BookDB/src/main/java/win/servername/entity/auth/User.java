@@ -24,19 +24,24 @@ public class User {
     private int numOwnedBooks;
 
     @Column(nullable = false)
-    private String password;
+    private byte[] password;
+
+    @Column(nullable = false)
+    private byte[] hash;
 
     public long getUserId(){return userId;}
     public String getUsername(){return username;}
     public String getFirstName(){return firstName;}
     public String getLastName(){return lastName;}
     public int getNumOwnedBooks(){return numOwnedBooks;}
-    public String getPassword(){return password;}
+    public byte[] getPassword(){return password;}
+    public byte[] getHash(){return hash;}
 
     public void setUserId(long userId){this.userId = userId;}
     public void setUsername(String username){this.username = username;}
     public void setFirstName(String firstName){this.firstName = firstName;}
     public void setLastName(String lastName){this.lastName = lastName;}
     public void setNumOwnedBooks(int numOwnedBooks){this.numOwnedBooks = numOwnedBooks;}
-    public void setPassword(String password){this.password = password;}
+    public void setPassword(byte[] password){this.password = password;}
+    public void setHash(byte[] hash){this.hash = hash;}
 }

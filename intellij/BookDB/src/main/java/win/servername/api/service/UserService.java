@@ -1,6 +1,9 @@
 package win.servername.api.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import win.servername.api.repository.auth.RefreshTokenRepository;
 import win.servername.api.repository.auth.UserRepository;
@@ -16,17 +19,18 @@ import win.servername.entity.permission.Permission;
 import win.servername.entity.permission.Role;
 import win.servername.entity.permission.RolePermission;
 import win.servername.entity.permission.RolePermissionId;
+import win.servername.entity.userDTO.PermissionDTO;
+import win.servername.entity.userDTO.RoleDTO;
+import win.servername.entity.userDTO.UserDTO;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static win.servername.Constants.*;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
     final UserRepository userRepository;
     final RefreshTokenRepository refreshTokenRepository;
     final UserRoleRepository userRoleRepository;
@@ -55,7 +59,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public int login(String username, String password){
+    public int login(String username, byte[] password){
         Optional<User> optionalUser = userRepository.findByUsername(username);
 
         if (optionalUser.isEmpty()){
@@ -64,7 +68,7 @@ public class UserService {
 
         User user = optionalUser.get();
 
-        if (user.getPassword().equals(password)){
+        if (Arrays.equals(password, user.getPassword())){
             return SUCCESSFUL_LOGIN;
         }else{
             return INCORRECT_PASSWORD;
@@ -267,9 +271,119 @@ public class UserService {
         return refreshTokenRepository.save(refreshToken);
     }
 
+    public User verifyRefreshToken(String token){
+        Optional<RefreshToken> optionalRefreshToken= refreshTokenRepository.findByRefreshToken(token);
+        User user = null;
+
+        if (optionalRefreshToken.isEmpty()){
+            return user;
+        }
+
+        RefreshToken refreshToken = optionalRefreshToken.get();
+
+        Optional<User> optionalUser = userRepository.findById(refreshToken.getUser().getUserId());
+
+        if (optionalUser.isEmpty()){
+            return user;
+        }
+
+        user = optionalUser.get();
+
+        return user;
+    }
+
     String generateRefreshToken(){
         UUID uuid = UUID.randomUUID();
 
         return uuid.toString();
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Optional<User> optionalUser = userRepository.findByUsername(username);
+
+        if (optionalUser.isEmpty()){
+            throw new UsernameNotFoundException("Invalid username.");
+        }
+
+        User user = optionalUser.get();
+
+        List<String> permissions = new ArrayList<>();
+
+        List<RoleDTO> roles = getUserRoles(user);
+
+        Set<PermissionDTO> permissionDTOS = getUserPermissions(roles);
+
+        for (PermissionDTO permission : permissionDTOS){
+            permissions.add(permission.getPermissionName());
+        }
+
+        return new UserInfoDetails(user, permissions);
+    }
+
+    UserDTO convertUser(User user){
+        UserDTO userDTO = new UserDTO();
+
+        userDTO.setFirstName(user.getFirstName());
+        userDTO.setLastName(user.getLastName());
+        userDTO.setNumOwnedBooks(user.getNumOwnedBooks());
+        userDTO.setUsername(user.getUsername());
+
+        List<RoleDTO> roles = getUserRoles(user);
+        Set<PermissionDTO> permissions = getUserPermissions(roles);
+
+        userDTO.setPermissions(permissions);
+        userDTO.setRoles(roles);
+
+        return userDTO;
+    }
+
+    List<RoleDTO> getUserRoles(User user){
+        List<RoleDTO> roles = new ArrayList<>();
+
+        List<UserRole> userRoles = userRoleRepository.findByUserRoleId_User(user);
+
+        for (UserRole userRole: userRoles){
+            RoleDTO roleDTO = new RoleDTO();
+
+            Optional<Role> optionalRole = roleRepository.findById(userRole.getUserRoleId().getRole().getRoleId());
+
+            if (optionalRole.isPresent()){
+                Role role = optionalRole.get();
+
+                roleDTO.setRoleName(role.getRoleName());
+                roleDTO.setRoleStatus(role.getRoleStatus());
+                roleDTO.setDescription(role.getDescription());
+                roles.add(roleDTO);
+            }
+        }
+
+        return roles;
+    }
+
+    Set<PermissionDTO> getUserPermissions(List<RoleDTO> roles){
+        Set<PermissionDTO> permissions = new HashSet<>();
+
+        for (RoleDTO roleDTO : roles){
+            Optional<Role> optionalRole = roleRepository.findRoleByRoleName(roleDTO.getRoleName());
+
+            if (optionalRole.isPresent()){
+                Role role = optionalRole.get();
+
+                List<Permission> perms = rolePermissionRepository.findAllByRolePermissionId_Role(role);
+
+                for (Permission perm : perms){
+                    PermissionDTO permission = new PermissionDTO();
+
+                    permission.setDescription(perm.getDescription());
+                    permission.setPermissionName(perm.getPermissionName());
+                    permission.setPermissionStatus(perm.getPermissionStatus());
+
+                    permissions.add(permission);
+                }
+            }
+        }
+
+        return permissions;
     }
 }

@@ -2,30 +2,34 @@ package win.servername.api.controller;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.*;
 import win.servername.api.exceptions.InvalidCredentialsException;
+import win.servername.api.service.JwtService;
 import win.servername.api.service.UserService;
 import win.servername.entity.auth.RefreshToken;
+import win.servername.entity.auth.User;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 
 import static win.servername.Constants.*;
 
 @RestController
 @RequestMapping(API_MAPPING)
+@RequiredArgsConstructor
 public class UserController {
-    private final UserService userService;
-
-    @Autowired
-    public UserController(UserService userService){
-        this.userService = userService;
-    }
+    private UserService userService;
+    private AuthenticationManager authenticationManager;
+    private JwtService jwtService;
 
     @GetMapping("/login")
     public String getRefreshToken(@RequestHeader("Authorization") String authHeader,
@@ -36,26 +40,30 @@ public class UserController {
         //TODO: Check login credentials and generate token
         try{
             authHeader = authHeader.substring("basic ".length());
-        }catch(Exception e){
+        }
+        catch(Exception e){
             throw new InvalidCredentialsException("Authentication Error. Usage Example: " +
                     "\"Basic base64.Encode(username:password)\"");
         }
 
         byte[] authValues = Base64.getDecoder().decode(authHeader);
 
-        String usernameAndPassword = new String(authValues, StandardCharsets.UTF_8);
+        String username;
 
-        String[] temp = usernameAndPassword.split(":", 2);;
-
-        if (temp.length != 2){
+        try{
+            username = new String(authValues, StandardCharsets.UTF_8).split(":", 2)[0];
+        }catch (Exception e){
             throw new InvalidCredentialsException("Authentication Error. Usage Example: " +
                     "\"Basic base64.Encode(username:password)\"");
         }
 
-        String username = temp[0];
-        String password = temp[1];
+        byte[] password = extractPassword(authValues);
+
+        Arrays.fill(authValues, (byte) '\0');
 
         loginStatus = userService.login(username, password);
+
+        Arrays.fill(password, (byte) '\0');
 
         refreshToken = switch (loginStatus) {
             case INCORRECT_PASSWORD -> throw new InvalidCredentialsException("Incorrect Password.");
@@ -64,7 +72,7 @@ public class UserController {
             default -> refreshToken;
         };
 
-        long timeUntilExpiry = refreshToken.getExpiryDate().getTime();
+        long timeUntilExpiry = refreshToken.getExpiryDate().getTime() - System.currentTimeMillis();
 
         Cookie cookie = new Cookie("RefreshToken", refreshToken.getRefreshToken());
         cookie.setMaxAge((int) timeUntilExpiry);
@@ -73,6 +81,63 @@ public class UserController {
         cookie.setPath("/");
         response.addCookie(cookie);
 
-        return "Successful Login!";
+        Authentication authentication = authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(username, password)
+        );
+
+        if (authentication.isAuthenticated()){
+            return jwtService.generateToken(username);
+        }else{
+            throw new UsernameNotFoundException("Invalid request");
+        }
+
+        //Previous code. Reworking above...
+        /*
+
+         */
+    }
+
+    @GetMapping("/refresh")
+    public String refreshAccessToken(@CookieValue(name = "RefreshToken") String token){
+       User user = userService.verifyRefreshToken(token);
+
+       if (user == null){
+           throw new InvalidCredentialsException("Bad Refresh Token");
+       }
+
+       return jwtService.generateToken(user.getUsername());
+   }
+
+    byte[] extractPassword(byte[] input){
+        int length = input.length;
+        int colonIndex = 0;
+
+        for (int i = 0; i < length; i++){
+            if (input[i] == ':'){
+                colonIndex = i;
+                i = length;
+            }
+        }
+
+        if (colonIndex == 0 || colonIndex == length - 1){
+            throw new InvalidCredentialsException("Authentication Error. Usage Example: " +
+                    "\"Basic base64.Encode(username:password)\"");
+        }
+
+        length = length - colonIndex - 1;
+
+        byte[] result = new byte[length];
+
+        System.arraycopy(
+                input,
+                colonIndex + 1,
+                result,
+                0,
+                length
+        );
+
+        Arrays.fill(input, (byte) '\0');
+
+        return result;
     }
 }

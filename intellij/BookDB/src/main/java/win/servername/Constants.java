@@ -15,4 +15,6 @@ public class Constants {
     public static final int SUCCESSFUL_LOGIN = 0;
     public static final int INCORRECT_PASSWORD = 1;
     public static final int INCORRECT_USERNAME = -1;
+
+    public static final int INVALID_USER = -1;
 }
