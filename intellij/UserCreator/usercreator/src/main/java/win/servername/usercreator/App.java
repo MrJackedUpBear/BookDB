@@ -78,7 +78,7 @@ public class App {
       long roleId;
 
       //Requires roleId, userId, description, and date provisioned
-      String description = "";
+      String description = "Added via Admin console.";
       java.util.Date date = new java.util.Date();
       java.sql.Date dateProvisioned = new java.sql.Date(date.getTime());
 
