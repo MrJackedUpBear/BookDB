@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: win.servername.usercreator.AppTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.112 s -- in win.servername.usercreator.AppTest

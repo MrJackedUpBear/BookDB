@@ -26,16 +26,12 @@ public class User {
     @Column(nullable = false)
     private byte[] password;
 
-    @Column(nullable = false)
-    private byte[] hash;
-
     public long getUserId(){return userId;}
     public String getUsername(){return username;}
     public String getFirstName(){return firstName;}
     public String getLastName(){return lastName;}
     public int getNumOwnedBooks(){return numOwnedBooks;}
     public byte[] getPassword(){return password;}
-    public byte[] getHash(){return hash;}
 
     public void setUserId(long userId){this.userId = userId;}
     public void setUsername(String username){this.username = username;}
@@ -43,5 +39,4 @@ public class User {
     public void setLastName(String lastName){this.lastName = lastName;}
     public void setNumOwnedBooks(int numOwnedBooks){this.numOwnedBooks = numOwnedBooks;}
     public void setPassword(byte[] password){this.password = password;}
-    public void setHash(byte[] hash){this.hash = hash;}
 }
