@@ -7,6 +7,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'add_book.dart';
 import 'book_info.dart';
 import 'main.dart';
+import 'constants.dart';
 
 late MobileScannerController barcodeScanner;
 

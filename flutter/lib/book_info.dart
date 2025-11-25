@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'main.dart';
 import 'add_book.dart';
+import 'constants.dart';
 
 //Creates a final variable for the max lines allowed for the description.
 //TODO: Maybe set a final variable for the max lines allowed for the title...
