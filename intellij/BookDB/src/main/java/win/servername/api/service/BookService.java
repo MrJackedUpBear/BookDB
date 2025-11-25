@@ -1,5 +1,6 @@
 package win.servername.api.service;
 
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import win.servername.api.repository.auth.UserRepository;
 import win.servername.api.repository.book.BookAvailabilityRepository;
 import win.servername.api.repository.book.BookRepository;
@@ -85,7 +86,7 @@ public class BookService {
 
         Book book = optionalBook.get();
 
-        List<BookAvailability> bookAvailabilities = bookAvailabilityRepository.findByBookAvailabilityId_UserAndBookAvailabilityIdBook(user, book);
+        List<BookAvailability> bookAvailabilities = bookAvailabilityRepository.findByBookAvailabilityId_Book(book);
 
         BookAvailability bookAvailability = new BookAvailability();
         BookAvailabilityId bookAvailabilityId = new BookAvailabilityId();
@@ -115,7 +116,21 @@ public class BookService {
     }
 
     public ReviewDTO saveReview(ReviewDTO review){
-        return convertReview(reviewRepository.save(convertReviewDTO(review)));
+        UserDTO_ForBook userDTOForBook = review.getUser();
+
+        Optional<User> optionalUser = userRepository.findByUsername(userDTOForBook.getUsername());
+
+        if (optionalUser.isEmpty()){
+            throw new UsernameNotFoundException("User " + userDTOForBook.getUsername() + " does not exist.");
+        }
+
+        User user = optionalUser.get();
+
+        Review r = convertReviewDTO(review);
+
+        r.setUser(user);
+
+        return convertReview(reviewRepository.save(r));
     }
 
     public BookAvailability saveBookAvailability(BookAvailability bookAvailability){
@@ -123,22 +138,14 @@ public class BookService {
     }
 
     //Read
-    public List<BookDTO> getBooks(UserDTO_ForBook userDTOForBook){
-        Optional<User> optionalUser = userRepository.findByUsername(userDTOForBook.getUsername());
-
-        if (optionalUser.isEmpty()){
-            throw new RuntimeException("User not found");
-        }
-
-        User user = optionalUser.get();
-
+    public List<BookDTO> getBooks(){
         List<Book> books = bookRepository.findAll();
         List<BookDTO> bookDTOS = new ArrayList<>();
 
         for (Book b : books){
             BookDTO bookDTO = convertBook(b);
 
-            List<BookAvailability> bookAvailabilities = bookAvailabilityRepository.findByBookAvailabilityId_UserAndBookAvailabilityIdBook(user, b);
+            List<BookAvailability> bookAvailabilities = bookAvailabilityRepository.findByBookAvailabilityId_Book(b);
             List<BookAvailabilityDTO> bookAvailabilityDTOS = new ArrayList<>();
 
             for (BookAvailability ba : bookAvailabilities){
@@ -231,12 +238,88 @@ public class BookService {
     }
 
     //Delete
-    public void deleteBook(long bookId){
-        bookRepository.deleteById(bookId);
+    public void deleteBook(BookDTO bookDTO){
+       //TODO: Implement deleting method that checks for availability and deletes the book from there
+        Optional<Book> optionalBook = bookRepository.findByIsbn(bookDTO.getIsbn());
+
+        if (optionalBook.isEmpty()){
+            throw new RuntimeException("Book does not exist.");
+        }
+
+        Optional<User> optionalUser;
+        try{
+            optionalUser = userRepository.findByUsername(bookDTO.getBookAvailability().getFirst().getUser().getUsername());
+        }catch(Exception e){
+            throw new RuntimeException("Error finding user: " + e.getMessage());
+        }
+
+        if (optionalUser.isEmpty()){
+            throw new RuntimeException("User does not exist.");
+        }
+
+        User user = optionalUser.get();
+        Book book = optionalBook.get();
+
+        List<BookAvailability> bookAvailabilities = bookAvailabilityRepository.findByBookAvailabilityId_Book(book);
+
+        if (bookAvailabilities.isEmpty()){
+            List<Review> reviews = reviewRepository.findAllByBook(book);
+
+            for (Review review : reviews){
+                reviewRepository.deleteById(review.getReviewId());
+            }
+
+            bookRepository.deleteById(book.getBookId());
+            return;
+        }else if (bookAvailabilities.size() == 1){
+            List<Review> reviews = reviewRepository.findAllByBook(book);
+
+            for (Review review : reviews){
+                reviewRepository.deleteById(review.getReviewId());
+            }
+
+            bookAvailabilityRepository.deleteByBookAvailabilityId(bookAvailabilities.getFirst().getBookAvailabilityId());
+            bookRepository.deleteById(book.getBookId());
+            return;
+        }
+
+        for (BookAvailability bookAvailability : bookAvailabilities){
+            if (bookAvailability.getBookAvailabilityId().getUser().equals(user)
+            && bookAvailability.getBookAvailabilityId().getBook().equals(book)){
+                bookAvailabilityRepository.deleteByBookAvailabilityId(bookAvailability.getBookAvailabilityId());
+                break;
+            }
+        }
     }
 
-    public void deleteReview(long reviewId){
-        reviewRepository.deleteById(reviewId);
+    public void deleteReview(ReviewDTO reviewDTO){
+        UserDTO_ForBook userDTOForBook = reviewDTO.getUser();
+        BookDTO bookDTO = reviewDTO.getBook();
+
+        Optional<User> optionalUser = userRepository.findByUsername(userDTOForBook.getUsername());
+
+        if (optionalUser.isEmpty()){
+            throw new RuntimeException("User not found.");
+        }
+
+        Optional<Book> optionalBook = bookRepository.findByIsbn(bookDTO.getIsbn());
+
+        if (optionalBook.isEmpty()){
+            throw new RuntimeException("Book not found.");
+        }
+
+        Book book = optionalBook.get();
+        User user = optionalUser.get();
+
+        Optional<Review> optionalReview = reviewRepository.findByBookAndUser(book, user);
+
+        if (optionalReview.isEmpty()){
+            throw new RuntimeException("Review not found.");
+        }
+
+        Review review = optionalReview.get();
+
+        reviewRepository.deleteById(review.getReviewId());
     }
 
     public void deleteBookAvailability(BookAvailabilityId bookAvailabilityId){

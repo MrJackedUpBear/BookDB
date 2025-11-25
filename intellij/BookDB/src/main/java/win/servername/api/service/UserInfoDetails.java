@@ -17,10 +17,10 @@ public class UserInfoDetails implements UserDetails {
     private String password;
     private List<GrantedAuthority> authorities;
 
-    public UserInfoDetails(User user, List<String> permissions){
+    public UserInfoDetails(User user, List<String> roles){
         this.username = user.getUsername();
         this.password = Arrays.toString(user.getPassword());
-        this.authorities = permissions.stream().map(SimpleGrantedAuthority::new)
+        this.authorities = roles.stream().map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
     }
 

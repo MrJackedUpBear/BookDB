@@ -308,17 +308,17 @@ public class UserService implements UserDetailsService {
 
         User user = optionalUser.get();
 
-        List<String> permissions = new ArrayList<>();
+        List<String> roles = new ArrayList<>();
 
-        List<RoleDTO> roles = getUserRoles(user);
+        List<RoleDTO> roleDTOS = getUserRoles(user);
 
-        Set<PermissionDTO> permissionDTOS = getUserPermissions(roles);
+        Set<PermissionDTO> permissionDTOS = getUserPermissions(roleDTOS);
 
-        for (PermissionDTO permission : permissionDTOS){
-            permissions.add(permission.getPermissionName());
+        for (RoleDTO role : roleDTOS){
+            roles.add(role.getRoleName());
         }
 
-        return new UserInfoDetails(user, permissions);
+        return new UserInfoDetails(user, roles);
     }
 
     UserDTO convertUser(User user){

@@ -46,8 +46,8 @@ public class SecurityConfig {
 
                 // Configure endpoint authorization
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(API_MAPPING + "/book").hasAuthority("Add Book")
-
+                        .requestMatchers(API_MAPPING + "/elevateduser/**").hasAnyAuthority("Admin", "Elevated User")
+                        .requestMatchers(API_MAPPING + "/admin/**").hasAuthority("Admin")
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
                 )

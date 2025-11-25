@@ -1,18 +1,15 @@
 package win.servername.api.controller;
 
+import jakarta.transaction.Transactional;
 import win.servername.api.service.BookService;
 import win.servername.entity.bookDTO.BookDTO;
 import win.servername.entity.bookDTO.ReviewDTO;
-import win.servername.entity.bookDTO.UserDTO_ForBook;
-import win.servername.entity.book.Book;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import win.servername.entity.book.Review;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 
 import static win.servername.Constants.API_MAPPING;
 
@@ -27,7 +24,7 @@ public class BookController {
     }
 
     //Create
-    @PostMapping("/book")
+    @PostMapping("/elevateduser/book")
     public ResponseEntity<BookDTO> saveBook(@RequestBody BookDTO book){
         BookDTO newBook = bookService.saveBook(book);
         return ResponseEntity.ok(newBook);
@@ -41,8 +38,8 @@ public class BookController {
 
     //Read
     @GetMapping("/books")
-    public ResponseEntity<HashMap<String, Object>> getBooks(@RequestBody UserDTO_ForBook user){
-        List<BookDTO> books = bookService.getBooks(user);
+    public ResponseEntity<HashMap<String, Object>> getBooks(){
+        List<BookDTO> books = bookService.getBooks();
 
         HashMap<String, Object> output = new HashMap<>();
 
@@ -58,7 +55,20 @@ public class BookController {
         return ResponseEntity.ok(book);
     }
 
-    boolean verifyLogin(UserDTO_ForBook userDTOForBook){
-        return true;
+    //Delete
+    @Transactional
+    @DeleteMapping("/admin/book")
+    public ResponseEntity<String> deleteBook(@RequestBody BookDTO bookDTO){
+        bookService.deleteBook(bookDTO);
+
+        return ResponseEntity.ok("Success!");
+    }
+
+    @Transactional
+    @DeleteMapping("/admin/review")
+    public ResponseEntity<String> deleteReview(@RequestBody ReviewDTO reviewDTO){
+        bookService.deleteReview(reviewDTO);
+
+        return ResponseEntity.ok("Success!");
     }
 }
