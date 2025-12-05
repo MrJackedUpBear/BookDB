@@ -873,549 +873,530 @@ class _MyHomePageState extends State<MyHomePage> {
       _searchList = true;
     }
 
+    //TODO: Actually navigate to a page to change the API url.
     if (apiUrl.isEmpty){
-      return Scaffold(
+      //Navigate to new page to add api url...
+    }
+
+    return Scaffold(
+      //top-level menu for the main page.
         appBar: AppBar(
-          title: Text("Book DB"),
-        ),
-        body: Center(
-          child: Column(
-            children: <Widget>[
-              Text("URL not set..."),
-              ElevatedButton(
-                style: defaultButtonStyle,
-                onPressed: (){
-
-                },
-                child: Text(
-                  "Add URL",
-                  style: defaultButtonTextStyle,
-                ),
-              )
-            ],
-          ),
-        ),
-      );
-    }else{
-      return Scaffold(
-        //top-level menu for the main page.
-          appBar: AppBar(
-            //sets the background color of the appbar
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              //Creates a builder object for the hamburger menu
-              //button
-              leading: Builder(
-                builder: (context){
-                  return Container(
-                    //Sets the color of the button and makes the button
-                    //round
-                    decoration: BoxDecoration(
-                      color: Color(0xFFD9D9D9),
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    //Sets the icon for the button to be the menu icon
-                    child: IconButton(
-                      icon: Icon(Icons.menu),
-                      //Opens the left-hand drawer if the button is
-                      //pressed
-                      onPressed: (){
-                        Scaffold.of(context).openDrawer();
-                      },
-                    ),
-                  );
-                },
-              ),
-              //Sets the title ("Book DB") to the center of navbar
-              title: Center(
-                //Gets the title set from the first method.
-                  child: Text(title,
-                      style:TextStyle(
-                          color: Color(0xFFE6CCB2),
-                          fontSize: 24
-                      ))
-              ),
-
-              //Loads the buttons/actions after the title.
-              actions: <Widget>[
-                if (_showClearFilterButton)
-                  ElevatedButton(
+          //sets the background color of the appbar
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            //Creates a builder object for the hamburger menu
+            //button
+            leading: Builder(
+              builder: (context){
+                return Container(
+                  //Sets the color of the button and makes the button
+                  //round
+                  decoration: BoxDecoration(
+                    color: Color(0xFFD9D9D9),
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  //Sets the icon for the button to be the menu icon
+                  child: IconButton(
+                    icon: Icon(Icons.menu),
+                    //Opens the left-hand drawer if the button is
+                    //pressed
                     onPressed: (){
-                      _clearFilterInputs();
-                    },
-                    child: Text("Clear Filter"),
-                  ),
-                //Creates the filter button for filtering the list.
-                if (!_searchList)
-                  Builder(
-                    builder: (context){
-                      return Container(
-                        //Sets the color and roundedness of the button
-                        decoration: BoxDecoration(
-                          color: Color(0xFFD9D9D9),
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                        //Sets the filter icon
-                        child: IconButton(
-                          icon: Icon(Icons.filter_alt),
-                          //Makes it open the drawer on the right-hand
-                          //side if pressed.
-                          onPressed: (){
-                            Scaffold.of(context).openEndDrawer();
-                          },
-                        ),
-                      );
+                      Scaffold.of(context).openDrawer();
                     },
                   ),
-              ]
-          ),
+                );
+              },
+            ),
+            //Sets the title ("Book DB") to the center of navbar
+            title: Center(
+              //Gets the title set from the first method.
+                child: Text(title,
+                    style:TextStyle(
+                        color: Color(0xFFE6CCB2),
+                        fontSize: 24
+                    ))
+            ),
 
-          //left-hand side drawer or the hamburger menu drawer
-          drawer: Drawer(
-            //Utilizes the hamburger menu widget created below to display the hamburger menu
-            child: HamburgerMenu(title: title),
-          ),
-
-          //right-hand side drawer or the filter drawer
-          endDrawer: Drawer(
-
-            //lists all items in the drawer
-              child: Scaffold(
-                  appBar: AppBar(
-                    //Sets the color of the title and color of the appbar
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    //Hamburger menu button
-                    leading:Container(
-                      //Sets the color and corner radius of the
-                      //hamburger menu button
+            //Loads the buttons/actions after the title.
+            actions: <Widget>[
+              if (_showClearFilterButton)
+                ElevatedButton(
+                  onPressed: (){
+                    _clearFilterInputs();
+                  },
+                  child: Text("Clear Filter"),
+                ),
+              //Creates the filter button for filtering the list.
+              if (!_searchList)
+                Builder(
+                  builder: (context){
+                    return Container(
+                      //Sets the color and roundedness of the button
                       decoration: BoxDecoration(
                         color: Color(0xFFD9D9D9),
                         borderRadius: BorderRadius.circular(10.0),
                       ),
-                      //Sets the on pressed behavior to close the pull-out
-                      //menu and sets the icon to be the hamburger menu
-                      //icon
+                      //Sets the filter icon
                       child: IconButton(
-                        onPressed: (){
-                          Navigator.pop(context);
-                        },
                         icon: Icon(Icons.filter_alt),
+                        //Makes it open the drawer on the right-hand
+                        //side if pressed.
+                        onPressed: (){
+                          Scaffold.of(context).openEndDrawer();
+                        },
                       ),
-                    ),
+                    );
+                  },
+                ),
+            ]
+        ),
 
-                    //The pull-out menu title
-                    title: Center(
-                      //Gets the title set from the first method.
-                        child: Text(
-                            title,
-                            //Sets the color and font size of the title.
-                            style:TextStyle(
-                                color: Color(0xFFE6CCB2),
-                                fontSize: 24
-                            )
-                        )
+        //left-hand side drawer or the hamburger menu drawer
+        drawer: Drawer(
+          //Utilizes the hamburger menu widget created below to display the hamburger menu
+          child: HamburgerMenu(title: title),
+        ),
+
+        //right-hand side drawer or the filter drawer
+        endDrawer: Drawer(
+
+          //lists all items in the drawer
+            child: Scaffold(
+                appBar: AppBar(
+                  //Sets the color of the title and color of the appbar
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  //Hamburger menu button
+                  leading:Container(
+                    //Sets the color and corner radius of the
+                    //hamburger menu button
+                    decoration: BoxDecoration(
+                      color: Color(0xFFD9D9D9),
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    //Sets the on pressed behavior to close the pull-out
+                    //menu and sets the icon to be the hamburger menu
+                    //icon
+                    child: IconButton(
+                      onPressed: (){
+                        Navigator.pop(context);
+                      },
+                      icon: Icon(Icons.filter_alt),
                     ),
                   ),
 
-                  //Sets the background color of the main filter elements
-                  backgroundColor: defaultPageColor,
+                  //The pull-out menu title
+                  title: Center(
+                    //Gets the title set from the first method.
+                      child: Text(
+                          title,
+                          //Sets the color and font size of the title.
+                          style:TextStyle(
+                              color: Color(0xFFE6CCB2),
+                              fontSize: 24
+                          )
+                      )
+                  ),
+                ),
 
-                  body: SizedBox(
-                    //Ensures the width is taking up the entire area
-                    //This is done to ensure proper centering of the
-                    //elements on the screen
-                      width: double.infinity,
+                //Sets the background color of the main filter elements
+                backgroundColor: defaultPageColor,
 
-                      //All filter elements
-                      child: Column(
-                        children: <Widget>[
-                          //Filter By: text
-                          Text(
-                            //sets the filter by text, the font weight, size, and color
-                            "Filter By:",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: headingFontSize,
-                              color: _invertColor(defaultPageColor),
-                            ),
+                body: SizedBox(
+                  //Ensures the width is taking up the entire area
+                  //This is done to ensure proper centering of the
+                  //elements on the screen
+                    width: double.infinity,
+
+                    //All filter elements
+                    child: Column(
+                      children: <Widget>[
+                        //Filter By: text
+                        Text(
+                          //sets the filter by text, the font weight, size, and color
+                          "Filter By:",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: headingFontSize,
+                            color: _invertColor(defaultPageColor),
                           ),
+                        ),
 
-                          //My Library Filtering
-                          Row(
-                            //Makes sure the size of the row is small enough to still center properly
+                        //My Library Filtering
+                        Row(
+                          //Makes sure the size of the row is small enough to still center properly
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            //Personal library text with font size and color
+                            Text(
+                              "Personal Library",
+                              style: TextStyle(
+                                fontSize: subHeadingFontSize,
+                                color: _invertColor(defaultPageColor),
+                              ),
+                            ),
+                            //Checkbox for the personal library
+                            Checkbox(
+                              //If the value changes, then make sure the value is not null then assign personal library to the value.
+                              value: _personalLibrary,
+                              onChanged: (bool? value){
+                                setState(() {
+                                  if (value != null){
+                                    _personalLibrary = value;
+                                  }
+                                });
+                              },
+                            )
+                          ],
+                        ),
+
+                        //Author text and filtering
+                        Row(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
-                              //Personal library text with font size and color
+                              //Author text
                               Text(
-                                "Personal Library",
+                                //Sets the text, font size, font weight, and color of the text.
+                                "Author",
                                 style: TextStyle(
                                   fontSize: subHeadingFontSize,
+                                  fontWeight: FontWeight.bold,
                                   color: _invertColor(defaultPageColor),
                                 ),
                               ),
-                              //Checkbox for the personal library
-                              Checkbox(
-                                //If the value changes, then make sure the value is not null then assign personal library to the value.
-                                value: _personalLibrary,
-                                onChanged: (bool? value){
-                                  setState(() {
-                                    if (value != null){
-                                      _personalLibrary = value;
+
+                              //Author arrow buttons
+                              IconButton(
+                                //Resets the other filtering arrows
+                                  onPressed: (){
+                                    titleSort = 0;
+                                    genreSort = 0;
+                                    reviewSort = 0;
+
+                                    //Checks if the author sort is currently zero, if so it alternates from -1 to 1, to 0 again and again.
+                                    if (authorSort == 0){
+                                      setState(() {
+                                        authorSort = -1;
+                                      });
+                                    }else if (authorSort == -1){
+                                      setState(() {
+                                        authorSort = 1;
+                                      });
+                                    }else{
+                                      setState(() {
+                                        authorSort = 0;
+                                      });
                                     }
-                                  });
-                                },
+                                  },
+                                  icon: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        //Displays two arrows if the sort is 0, shows one arrow if the sort is greater than 0, and shows the opposite arrow when sort is less than 0
+                                        if (authorSort == 0)
+                                          Row(
+                                            children: [
+                                              Icon(Icons.arrow_upward),
+                                              Icon(Icons.arrow_downward),
+                                            ],
+                                          ),
+                                        if (authorSort > 0)
+                                          Icon(Icons.arrow_upward),
+                                        if (authorSort < 0)
+                                          Icon(Icons.arrow_downward),
+                                      ]
+                                  )
                               )
-                            ],
-                          ),
-
-                          //Author text and filtering
-                          Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                //Author text
-                                Text(
-                                  //Sets the text, font size, font weight, and color of the text.
-                                  "Author",
-                                  style: TextStyle(
-                                    fontSize: subHeadingFontSize,
-                                    fontWeight: FontWeight.bold,
-                                    color: _invertColor(defaultPageColor),
-                                  ),
-                                ),
-
-                                //Author arrow buttons
-                                IconButton(
-                                  //Resets the other filtering arrows
-                                    onPressed: (){
-                                      titleSort = 0;
-                                      genreSort = 0;
-                                      reviewSort = 0;
-
-                                      //Checks if the author sort is currently zero, if so it alternates from -1 to 1, to 0 again and again.
-                                      if (authorSort == 0){
-                                        setState(() {
-                                          authorSort = -1;
-                                        });
-                                      }else if (authorSort == -1){
-                                        setState(() {
-                                          authorSort = 1;
-                                        });
-                                      }else{
-                                        setState(() {
-                                          authorSort = 0;
-                                        });
-                                      }
-                                    },
-                                    icon: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: <Widget>[
-                                          //Displays two arrows if the sort is 0, shows one arrow if the sort is greater than 0, and shows the opposite arrow when sort is less than 0
-                                          if (authorSort == 0)
-                                            Row(
-                                              children: [
-                                                Icon(Icons.arrow_upward),
-                                                Icon(Icons.arrow_downward),
-                                              ],
-                                            ),
-                                          if (authorSort > 0)
-                                            Icon(Icons.arrow_upward),
-                                          if (authorSort < 0)
-                                            Icon(Icons.arrow_downward),
-                                        ]
-                                    )
-                                )
-                              ]
-                          ),
-                          SizedBox(
-                            width: filterBoxSize,
-                            child: TextField(
-                              controller: _authorTextController,
-                              decoration: InputDecoration(
-                                hint: Text(
-                                  //Sets the text and font size.
-                                  "Enter author...",
-                                  style: TextStyle(
-                                    fontSize: subHeadingFontSize,
-                                  ),
-                                ),
-                                //fills the text field with the color white, sets the border to the specified color with the specified width.
-                                filled: true,
-                                fillColor: Colors.white,
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: Color(0xFF9C6644),
-                                    width: 5.0,
-                                  ),
+                            ]
+                        ),
+                        SizedBox(
+                          width: filterBoxSize,
+                          child: TextField(
+                            controller: _authorTextController,
+                            decoration: InputDecoration(
+                              hint: Text(
+                                //Sets the text and font size.
+                                "Enter author...",
+                                style: TextStyle(
+                                  fontSize: subHeadingFontSize,
                                 ),
                               ),
-                              style: TextStyle(
-                                fontSize: subHeadingFontSize,
+                              //fills the text field with the color white, sets the border to the specified color with the specified width.
+                              filled: true,
+                              fillColor: Colors.white,
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Color(0xFF9C6644),
+                                  width: 5.0,
+                                ),
                               ),
                             ),
-                          ),
-
-                          //Book Title text and filtering
-                          Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                //Author text
-                                Text(
-                                  //Sets the text, font size, font weight, and color of the text.
-                                  "Book Title",
-                                  style: TextStyle(
-                                    fontSize: subHeadingFontSize,
-                                    fontWeight: FontWeight.bold,
-                                    color: _invertColor(defaultPageColor),
-                                  ),
-                                ),
-
-                                //Author arrow buttons
-                                IconButton(
-                                    onPressed: (){
-                                      //Resets the other filtering arrows
-                                      authorSort = 0;
-                                      genreSort = 0;
-                                      reviewSort = 0;
-
-                                      //Checks if the title sort is currently zero, if so it alternates from -1 to 1, to 0 again and again.
-                                      if (titleSort == 0){
-                                        setState(() {
-                                          titleSort = -1;
-                                        });
-                                      }else if (titleSort == -1){
-                                        setState(() {
-                                          titleSort = 1;
-                                        });
-                                      }else{
-                                        setState(() {
-                                          titleSort = 0;
-                                        });
-                                      }
-                                    },
-                                    icon: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: <Widget>[
-                                          //Displays two arrows if the sort is 0, shows one arrow if the sort is greater than 0, and shows the opposite arrow when sort is less than 0
-                                          if (titleSort == 0)
-                                            Row(
-                                              children: [
-                                                Icon(Icons.arrow_upward),
-                                                Icon(Icons.arrow_downward),
-                                              ],
-                                            ),
-                                          if (titleSort > 0)
-                                            Icon(Icons.arrow_upward),
-                                          if (titleSort < 0)
-                                            Icon(Icons.arrow_downward),
-                                        ]
-                                    )
-                                )
-                              ]
-                          ),
-                          SizedBox(
-                            width: filterBoxSize,
-                            child: TextField(
-                              controller: _titleTextController,
-                              decoration: InputDecoration(
-                                hint: Text(
-                                  //Sets the text and font size.
-                                  "Enter book title...",
-                                  style: TextStyle(
-                                    fontSize: subHeadingFontSize,
-                                  ),
-                                ),
-                                //fills the text field with the color white, sets the border to the specified color with the specified width.
-                                filled: true,
-                                fillColor: Colors.white,
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: Color(0xFF9C6644),
-                                    width: 5.0,
-                                  ),
-                                ),
-                              ),
-                              style: TextStyle(
-                                fontSize: subHeadingFontSize,
-                              ),
+                            style: TextStyle(
+                              fontSize: subHeadingFontSize,
                             ),
                           ),
+                        ),
 
-                          //Genre text and filtering
-                          Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                //Author text
-                                Text(
-                                  //Sets the text, font size, font weight, and color of the text.
-                                  "Genre",
-                                  style: TextStyle(
-                                    fontSize: subHeadingFontSize,
-                                    fontWeight: FontWeight.bold,
-                                    color: _invertColor(defaultPageColor),
-                                  ),
-                                ),
-
-                                //Author arrow buttons
-                                IconButton(
-                                    onPressed: (){
-                                      //Resets the other filtering arrows
-                                      titleSort = 0;
-                                      authorSort = 0;
-                                      reviewSort = 0;
-
-                                      //Checks if the genre sort is currently zero, if so it alternates from -1 to 1, to 0 again and again.
-                                      if(genreSort == 0){
-                                        setState(() {
-                                          genreSort = -1;
-                                        });
-                                      }else if (genreSort == -1){
-                                        setState(() {
-                                          genreSort = 1;
-                                        });
-                                      }else if (genreSort == 1){
-                                        setState(() {
-                                          genreSort = 0;
-                                        });
-                                      }
-                                    },
-                                    icon: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: <Widget>[
-                                          //Displays two arrows if the sort is 0, shows one arrow if the sort is greater than 0, and shows the opposite arrow when sort is less than 0
-                                          if (genreSort == 0)
-                                            Row(
-                                              children: [
-                                                Icon(Icons.arrow_upward),
-                                                Icon(Icons.arrow_downward),
-                                              ],
-                                            ),
-                                          if (genreSort < 0)
-                                            Icon(Icons.arrow_downward),
-                                          if (genreSort > 0)
-                                            Icon(Icons.arrow_upward),
-                                        ]
-                                    )
-                                )
-                              ]
-                          ),
-                          SizedBox(
-                            width: filterBoxSize,
-                            child: TextField(
-                              controller: _genreTextController,
-                              decoration: InputDecoration(
-                                //fills the text field with the color white, sets the border to the specified color with the specified width.
-                                filled: true,
-                                fillColor: Colors.white,
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: Color(0xFF9C6644),
-                                    width: 5.0,
-                                  ),
-                                ),
-                                hint: Text(
-                                  //Sets the text and font size.
-                                  "Enter genre...",
-                                  style: TextStyle(
-                                    fontSize: subHeadingFontSize,
-                                  ),
+                        //Book Title text and filtering
+                        Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              //Author text
+                              Text(
+                                //Sets the text, font size, font weight, and color of the text.
+                                "Book Title",
+                                style: TextStyle(
+                                  fontSize: subHeadingFontSize,
+                                  fontWeight: FontWeight.bold,
+                                  color: _invertColor(defaultPageColor),
                                 ),
                               ),
-                              style: TextStyle(
-                                fontSize: subHeadingFontSize,
+
+                              //Author arrow buttons
+                              IconButton(
+                                  onPressed: (){
+                                    //Resets the other filtering arrows
+                                    authorSort = 0;
+                                    genreSort = 0;
+                                    reviewSort = 0;
+
+                                    //Checks if the title sort is currently zero, if so it alternates from -1 to 1, to 0 again and again.
+                                    if (titleSort == 0){
+                                      setState(() {
+                                        titleSort = -1;
+                                      });
+                                    }else if (titleSort == -1){
+                                      setState(() {
+                                        titleSort = 1;
+                                      });
+                                    }else{
+                                      setState(() {
+                                        titleSort = 0;
+                                      });
+                                    }
+                                  },
+                                  icon: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        //Displays two arrows if the sort is 0, shows one arrow if the sort is greater than 0, and shows the opposite arrow when sort is less than 0
+                                        if (titleSort == 0)
+                                          Row(
+                                            children: [
+                                              Icon(Icons.arrow_upward),
+                                              Icon(Icons.arrow_downward),
+                                            ],
+                                          ),
+                                        if (titleSort > 0)
+                                          Icon(Icons.arrow_upward),
+                                        if (titleSort < 0)
+                                          Icon(Icons.arrow_downward),
+                                      ]
+                                  )
+                              )
+                            ]
+                        ),
+                        SizedBox(
+                          width: filterBoxSize,
+                          child: TextField(
+                            controller: _titleTextController,
+                            decoration: InputDecoration(
+                              hint: Text(
+                                //Sets the text and font size.
+                                "Enter book title...",
+                                style: TextStyle(
+                                  fontSize: subHeadingFontSize,
+                                ),
+                              ),
+                              //fills the text field with the color white, sets the border to the specified color with the specified width.
+                              filled: true,
+                              fillColor: Colors.white,
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Color(0xFF9C6644),
+                                  width: 5.0,
+                                ),
                               ),
                             ),
+                            style: TextStyle(
+                              fontSize: subHeadingFontSize,
+                            ),
                           ),
+                        ),
 
-                          //Review text and filtering
-                          Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                //Author text
-                                Text(
-                                  //Sets the text, font size, font weight, and color of the text.
-                                  "Reviews",
-                                  style: TextStyle(
-                                    fontSize: subHeadingFontSize,
-                                    fontWeight: FontWeight.bold,
-                                    color: _invertColor(defaultPageColor),
-                                  ),
+                        //Genre text and filtering
+                        Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              //Author text
+                              Text(
+                                //Sets the text, font size, font weight, and color of the text.
+                                "Genre",
+                                style: TextStyle(
+                                  fontSize: subHeadingFontSize,
+                                  fontWeight: FontWeight.bold,
+                                  color: _invertColor(defaultPageColor),
                                 ),
+                              ),
 
-                                //Author arrow buttons
-                                IconButton(
-                                    onPressed: (){
-                                      //Resets the other filtering arrows
-                                      titleSort = 0;
-                                      genreSort = 0;
-                                      authorSort = 0;
+                              //Author arrow buttons
+                              IconButton(
+                                  onPressed: (){
+                                    //Resets the other filtering arrows
+                                    titleSort = 0;
+                                    authorSort = 0;
+                                    reviewSort = 0;
 
-                                      //Checks if the review sort is currently zero, if so it alternates from -1 to 1, to 0 again and again.
-                                      if (reviewSort == 0){
-                                        setState(() {
-                                          reviewSort = -1;
-                                        });
-                                      }else if (reviewSort == -1){
-                                        setState(() {
-                                          reviewSort = 1;
-                                        });
-                                      }else{
-                                        setState(() {
-                                          reviewSort = 0;
-                                        });
-                                      }
-                                    },
-                                    icon: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: <Widget>[
-                                          //Displays two arrows if the sort is 0, shows one arrow if the sort is greater than 0, and shows the opposite arrow when sort is less than 0
-                                          if (reviewSort == 0)
-                                            Row(
-                                              children: [
-                                                Icon(Icons.arrow_upward),
-                                                Icon(Icons.arrow_downward),
-                                              ],
-                                            ),
-                                          if (reviewSort > 0)
-                                            Icon(Icons.arrow_upward),
-                                          if (reviewSort < 0)
-                                            Icon(Icons.arrow_downward),
-                                        ]
-                                    )
-                                )
-                              ]
+                                    //Checks if the genre sort is currently zero, if so it alternates from -1 to 1, to 0 again and again.
+                                    if(genreSort == 0){
+                                      setState(() {
+                                        genreSort = -1;
+                                      });
+                                    }else if (genreSort == -1){
+                                      setState(() {
+                                        genreSort = 1;
+                                      });
+                                    }else if (genreSort == 1){
+                                      setState(() {
+                                        genreSort = 0;
+                                      });
+                                    }
+                                  },
+                                  icon: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        //Displays two arrows if the sort is 0, shows one arrow if the sort is greater than 0, and shows the opposite arrow when sort is less than 0
+                                        if (genreSort == 0)
+                                          Row(
+                                            children: [
+                                              Icon(Icons.arrow_upward),
+                                              Icon(Icons.arrow_downward),
+                                            ],
+                                          ),
+                                        if (genreSort < 0)
+                                          Icon(Icons.arrow_downward),
+                                        if (genreSort > 0)
+                                          Icon(Icons.arrow_upward),
+                                      ]
+                                  )
+                              )
+                            ]
+                        ),
+                        SizedBox(
+                          width: filterBoxSize,
+                          child: TextField(
+                            controller: _genreTextController,
+                            decoration: InputDecoration(
+                              //fills the text field with the color white, sets the border to the specified color with the specified width.
+                              filled: true,
+                              fillColor: Colors.white,
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Color(0xFF9C6644),
+                                  width: 5.0,
+                                ),
+                              ),
+                              hint: Text(
+                                //Sets the text and font size.
+                                "Enter genre...",
+                                style: TextStyle(
+                                  fontSize: subHeadingFontSize,
+                                ),
+                              ),
+                            ),
+                            style: TextStyle(
+                              fontSize: subHeadingFontSize,
+                            ),
                           ),
+                        ),
 
-                          //Submit button to start filtering
-                          ElevatedButton(
-                            onPressed: (){
-                              //Starts filtering and closes the filter menu.
-                              _filter();
-                              Navigator.pop(context);
-                            },
-                            //Sets the color of the button, the size of the button, and removes the rounding.
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFFDDB892),
-                              minimumSize: minButtonSize,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(0.0),
+                        //Review text and filtering
+                        Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              //Author text
+                              Text(
+                                //Sets the text, font size, font weight, and color of the text.
+                                "Reviews",
+                                style: TextStyle(
+                                  fontSize: subHeadingFontSize,
+                                  fontWeight: FontWeight.bold,
+                                  color: _invertColor(defaultPageColor),
+                                ),
                               ),
-                            ),
-                            child: Text(
-                              //Sets the button's text, color, and font size.
-                              "Submit",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: subHeadingFontSize,
-                              ),
-                            ),
-                          )
-                        ],
-                      )
-                  )
 
-              )
-          ),
+                              //Author arrow buttons
+                              IconButton(
+                                  onPressed: (){
+                                    //Resets the other filtering arrows
+                                    titleSort = 0;
+                                    genreSort = 0;
+                                    authorSort = 0;
 
-          //Sets the background color of the main part of the page.
+                                    //Checks if the review sort is currently zero, if so it alternates from -1 to 1, to 0 again and again.
+                                    if (reviewSort == 0){
+                                      setState(() {
+                                        reviewSort = -1;
+                                      });
+                                    }else if (reviewSort == -1){
+                                      setState(() {
+                                        reviewSort = 1;
+                                      });
+                                    }else{
+                                      setState(() {
+                                        reviewSort = 0;
+                                      });
+                                    }
+                                  },
+                                  icon: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: <Widget>[
+                                        //Displays two arrows if the sort is 0, shows one arrow if the sort is greater than 0, and shows the opposite arrow when sort is less than 0
+                                        if (reviewSort == 0)
+                                          Row(
+                                            children: [
+                                              Icon(Icons.arrow_upward),
+                                              Icon(Icons.arrow_downward),
+                                            ],
+                                          ),
+                                        if (reviewSort > 0)
+                                          Icon(Icons.arrow_upward),
+                                        if (reviewSort < 0)
+                                          Icon(Icons.arrow_downward),
+                                      ]
+                                  )
+                              )
+                            ]
+                        ),
+
+                        //Submit button to start filtering
+                        ElevatedButton(
+                          onPressed: (){
+                            //Starts filtering and closes the filter menu.
+                            _filter();
+                            Navigator.pop(context);
+                          },
+                          //Sets the color of the button, the size of the button, and removes the rounding.
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFFDDB892),
+                            minimumSize: minButtonSize,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(0.0),
+                            ),
+                          ),
+                          child: Text(
+                            //Sets the button's text, color, and font size.
+                            "Submit",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: subHeadingFontSize,
+                            ),
+                          ),
+                        )
+                      ],
+                    )
+                )
+
+            )
+        ),
+
+        //Sets the background color of the main part of the page.
           backgroundColor: defaultPageColor,
 
           //Checks if we have any books. If we do it will display all books on the page

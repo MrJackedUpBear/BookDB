@@ -7,18 +7,21 @@ import 'constants.dart';
 
 import 'package:http/http.dart' as http;
 
+//Initializes the book search, book info, book cover, extra book info, and book work info API URLs
 final String bookSearchAPI = "https://openlibrary.org/search.json?limit=10&lang=eng&";
 final String bookInfoAPI = "https://openlibrary.org/isbn/";
 final String bookCoverAPI = "https://covers.openlibrary.org/b/isbn/";
 final String getExtraBookInfoAPI = "https://openlibrary.org/books/"; //Make sure to append .json to the end
 final String getBookWorkInfoAPI = "https://openlibrary.org/works/"; //Make sure to append .json
 
+//Sets the userAgent map that is used in each API call.
 final Map<String, String> userAgent =
 {HttpHeaders.userAgentHeader:
 'Personal Book DB/0.4 (Contact: jwtaylor771@proton.me)'};
 
 //Will keep this on the client side to improve speed of searching
 //books.
+//This makes an API call and returns the response gotten from the API.
 Future<http.Response> searchBooks(String query) async{
   return await http.get(
     Uri.parse(bookSearchAPI + query),
@@ -28,6 +31,7 @@ Future<http.Response> searchBooks(String query) async{
 
 //Can be on the server side.
 //TODO: Set this up on the server side API instead.
+//This makes an API call and returns the response gotten from the API.
 Future<http.Response> getBook(String isbn) async{
   return await http.get(
     Uri.parse("$bookInfoAPI$isbn.json"),
@@ -37,6 +41,7 @@ Future<http.Response> getBook(String isbn) async{
 
 //Can be on the server side.
 //TODO: Set this up on the server side API instead.
+//This makes an API call and returns the response gotten from the API.
 Future<http.Response> getBookCover(String isbn, String size) async{
   return await http.get(
     Uri.parse("$bookCoverAPI$isbn-$size.jpg"),
@@ -44,6 +49,7 @@ Future<http.Response> getBookCover(String isbn, String size) async{
   );
 }
 
+//This makes an API call and returns the response gotten from the API.
 Future<http.Response> getExtraBookInfo(String coverEdition) async {
   return await http.get(
     Uri.parse("$getExtraBookInfoAPI$coverEdition.json?lang=eng"),
@@ -51,6 +57,7 @@ Future<http.Response> getExtraBookInfo(String coverEdition) async {
   );
 }
 
+//This makes an API call and returns the response gotten from the API.
 Future<http.Response> getWorkInfo(String work) async{
   return await http.get(
     Uri.parse("$getBookWorkInfoAPI$work.json"),
@@ -58,37 +65,49 @@ Future<http.Response> getWorkInfo(String work) async{
   );
 }
 
+//Adds the book to the list
 void addBookToList(Book b){
   addBook(b);
 }
 
+//Creates the add book class widget
 class AddBook extends StatefulWidget{
   const AddBook({super.key, required this.title});
 
+  //Title for the page
   final String title;
 
+  //Creates the state for the add book page
   @override
   State<AddBook> createState() => AddBookState();
 }
 
+//Add book state 
 class AddBookState extends State<AddBook>{
+  //Function that searches for books and then loads them into a list
   Future<void> searchAndLoadBooks(BuildContext context) async {
+    //Sets the author name and book title to the text controller values inputted by the user
     var authorSearchName = _authorName.text;
     var bookSearchTitle = _bookTitle.text;
 
+    //Resets the text controllers
     _authorName.text = "";
     _bookTitle.text = "";
 
+    //If both inputs are empty, then don't complete the request
     if (authorSearchName.isEmpty && bookSearchTitle.isEmpty){
       return;
     }
 
+    //Initializes the query string
     var query = "";
 
+    //Adds title to the query if the title is not empty
     if (bookSearchTitle.isNotEmpty){
       query += "title=$bookSearchTitle";
     }
 
+    //Adds the author name if the author name is not empty
     if (authorSearchName.isNotEmpty){
       if (query.isNotEmpty){
         query += "&";
@@ -96,24 +115,31 @@ class AddBookState extends State<AddBook>{
       query += "author=$authorSearchName";
     }
 
+    //Sets the loading state (still a work in progress...)
     setState(() {
       _isLoading = true;
     });
 
+    //Makes an API call to search for the books.
     http.Response resp = await searchBooks(query);
 
+    //If it is not a okay response, return
     if (resp.statusCode != 200){
       return;
     }
 
+    //Decodes the json and stores it in the json body variable
     Map<String, dynamic> jsonBody = jsonDecode(resp.body);
 
+    //Gets a json list by searching for the docs in the json body. This comes from the API documentation
     List<dynamic> json = jsonBody['docs'];
     
+    //If there is nothing in the list, return
     if (json[0] == null){
       return;
     }
 
+    //Sets the list of books to the function that gets books from a json object
     foundBooks = await Book.getBooksFromJson(json);
   }
 

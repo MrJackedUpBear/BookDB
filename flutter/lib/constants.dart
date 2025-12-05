@@ -12,8 +12,9 @@ const headingFontSize = 40.0;
 const subHeadingFontSize = 25.0;
 const bookFontSize = 20.0;
 const menuButtonSize = Size(246, 53);
-String _bookApiUrl = "";
+String _bookApiUrl = "Temp";
 
+//Needed for future use. Will allow the change and getting of the API url.
 class Constants{
   void initializeValues() async{
     final prefs = await SharedPreferences.getInstance();
