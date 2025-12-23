@@ -20,6 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import win.servername.api.filter.JwtAuthFilter;
 
 import static win.servername.Constants.API_MAPPING;
+import static win.servername.Constants.API_VERSION_CHECK;
 
 @Configuration
 @EnableWebSecurity
@@ -48,6 +49,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(API_MAPPING + "/elevateduser/**").hasAnyAuthority("Admin", "Elevated User")
                         .requestMatchers(API_MAPPING + "/admin/**").hasAuthority("Admin")
+                        .requestMatchers(API_MAPPING + API_VERSION_CHECK).permitAll()
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
                 )

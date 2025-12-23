@@ -567,6 +567,10 @@ class _MyHomePageState extends State<MyHomePage> {
   static final TextEditingController _titleTextController = TextEditingController();
   static final TextEditingController _genreTextController = TextEditingController();
 
+  static final TextEditingController _apiUrlTextController = TextEditingController();
+  static final TextEditingController _usernameTextController = TextEditingController();
+  static final TextEditingController _passwordTextController = TextEditingController();
+
   //Some helper variables to determine certain filtering. 
   //The personal library bool keeps track of whether only the user's books
   //show, or if all books show.
@@ -846,6 +850,119 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _showURLForm(BuildContext context){
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Add URL...'),
+            //TODO: Create the form with the URL, username, and password for logging in to the server.
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text("Enter API URL Below:"),
+                  TextField(
+                    controller: _apiUrlTextController,
+                    decoration: InputDecoration(
+                      hintText: "Enter API URL",
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      bool validUrl = await _verifyURL();
+
+                      if (validUrl && context.mounted){
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Valid URL!"),
+                            backgroundColor: Colors.green,
+                            behavior: SnackBarBehavior.floating,
+                          )
+                        );
+                      }else if (context.mounted){
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Invalid URL."),
+                            backgroundColor: Colors.red,
+                            behavior: SnackBarBehavior.floating,
+                          )
+                        );
+                      }
+                    },
+                    child: Text("Validate URL"),
+                  ),
+                  Text("Enter Username Below:"),
+                  TextField(
+                    controller: _usernameTextController,
+                    decoration: InputDecoration(
+                      hintText: "Enter Username",
+                    ),
+                  ),
+                  Text("Enter Password Below:"),
+                  TextField(
+                    controller: _passwordTextController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      hintText: "Enter Password",
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      await _verifyLogin();
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: Text("Submit"),
+                  )
+                ],
+              ),
+            )
+          );
+        }
+    );
+  }
+
+  Future<bool> _verifyURL() async {
+    String url = _apiUrlTextController.text;
+
+    http.Response resp;
+
+    try{
+      resp = await http.get(
+          Uri.parse("$url/api/version"),
+          headers: userAgent
+      ).timeout(const Duration(seconds: 5));
+    }catch(e){
+      return false;
+    }
+
+
+    if (resp.statusCode != 200){
+      return false;
+    }
+
+    return true;
+  }
+
+  Future<void> _verifyLogin() async {
+    if (!await _verifyURL()){
+      return;
+    }
+
+    String apiUrl = _apiUrlTextController.text;
+    String username = _usernameTextController.text;
+    String password = _passwordTextController.text;
+
+    //TODO: Verify username and password login with the valid URL.
+
+
+    //Temporary to prevent storing the valid url for now...
+    return;
+
+    Constants().setBookApiUrl(apiUrl);
+  }
+
   //This is the main build widget that contains all the main page display.
   @override
   Widget build(BuildContext context) {
@@ -858,7 +975,6 @@ class _MyHomePageState extends State<MyHomePage> {
     screenHeight = MediaQuery.of(context).size.height;
 
     Constants().initializeValues();
-    String apiUrl = Constants().getBookApiUrl();
 
     //Some simple checks to see if we have any filter applied and if there are any books passed through the MainPage
     //If neither are true, this will clear all the filter inputs
@@ -871,11 +987,6 @@ class _MyHomePageState extends State<MyHomePage> {
       filteredBooks = widget.books;
       _showClearFilterButton = true;
       _searchList = true;
-    }
-
-    //TODO: Actually navigate to a page to change the API url.
-    if (apiUrl.isEmpty){
-      //Navigate to new page to add api url...
     }
 
     return Scaffold(
@@ -899,7 +1010,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     icon: Icon(Icons.menu),
                     //Opens the left-hand drawer if the button is
                     //pressed
-                    onPressed: (){
+                    onPressed: () async {
+                      String apiUrl = await Constants().getBookApiUrl();
+                      if (apiUrl.isEmpty && context.mounted){
+                        _showURLForm(context);
+                        return;
+                      }
                       Scaffold.of(context).openDrawer();
                     },
                   ),
@@ -940,7 +1056,12 @@ class _MyHomePageState extends State<MyHomePage> {
                         icon: Icon(Icons.filter_alt),
                         //Makes it open the drawer on the right-hand
                         //side if pressed.
-                        onPressed: (){
+                        onPressed: () async {
+                          String apiUrl = await Constants().getBookApiUrl();
+                          if (apiUrl.isEmpty && context.mounted){
+                            _showURLForm(context);
+                            return;
+                          }
                           Scaffold.of(context).openEndDrawer();
                         },
                       ),
@@ -1461,7 +1582,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   ElevatedButton(
                     //Sets the style to the default button style and navigates to the add book page on click
                       style: defaultButtonStyle,
-                      onPressed: (){
+                      onPressed: () async {
+                        String apiUrl = await Constants().getBookApiUrl();
+                        if (apiUrl.isEmpty && context.mounted){
+                          _showURLForm(context);
+                          return;
+                        }
+
                         Navigator.of(context).pushNamedAndRemoveUntil(
                           '/AddBook',
                               (Route<dynamic> route) => false,

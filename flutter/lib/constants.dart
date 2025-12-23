@@ -12,7 +12,9 @@ const headingFontSize = 40.0;
 const subHeadingFontSize = 25.0;
 const bookFontSize = 20.0;
 const menuButtonSize = Size(246, 53);
-String _bookApiUrl = "Temp";
+
+//For internal server api access
+String _bookApiUrl = "";
 
 //Needed for future use. Will allow the change and getting of the API url.
 class Constants{
@@ -26,10 +28,21 @@ class Constants{
     final prefs = await SharedPreferences.getInstance();
 
     prefs.setString("Book API Url", apiUrl);
+    print("Setting book api string to: $apiUrl");
     _bookApiUrl = apiUrl;
   }
 
-  String getBookApiUrl(){
+  Future<String> getBookApiUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    String? temp = prefs.getString("Book API Url");
+
+    if (temp == null){
+      _bookApiUrl = "";
+    }else{
+      _bookApiUrl = temp;
+    }
+
     return _bookApiUrl;
   }
 }
