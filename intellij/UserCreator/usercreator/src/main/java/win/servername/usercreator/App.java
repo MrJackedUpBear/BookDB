@@ -1,5 +1,6 @@
 package win.servername.usercreator;
 
+import java.util.Arrays;
 import java.util.Scanner;
 import java.sql.*;
 import java.util.Date;
@@ -37,7 +38,7 @@ public class App {
 
     static void addUserToTable(String username, String firstName, String lastName, String role){
       //Need to initialize the password and hash with some generic values...
-      byte[] password = "$2y$12$tER3.LcLXZCOrIS/kGpDIuhXmHD56RQSxpJ234iAPdAIr9aQVv6vy".getBytes(StandardCharsets.UTF_8);
+      byte[] password = "$2y$12$tER3.LcLXZCOrIS/kGpDIuhXmHD56RQSxpJ234iAPdAIr9aQVv6vy".getBytes(StandardCharsets.UTF_8); //TempPass
       int numOwnedBooks = 0;
       
       //Order should be (firstName, lastName, numOwnedBooks, password, username)
@@ -105,7 +106,7 @@ public class App {
           System.out.println("Unexpected error adding user to role: " + roleId);
         }
       }catch(SQLException e){
-        System.out.println("Error adding user to role: " + e.getStackTrace());
+        System.out.println("Error adding user to role: " + Arrays.toString(e.getStackTrace()));
       }
     }
 

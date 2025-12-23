@@ -32,7 +32,7 @@ public class UserController {
     private JwtService jwtService;
 
     @GetMapping("/login")
-    public String getRefreshToken(@RequestHeader("Authorization") String authHeader,
+    public ResponseEntity<String> getRefreshToken(@RequestHeader("Authorization") String authHeader,
                                                   HttpServletResponse response){
         int loginStatus = 0;
         RefreshToken refreshToken = new RefreshToken();
@@ -86,7 +86,7 @@ public class UserController {
         );
 
         if (authentication.isAuthenticated()){
-            return jwtService.generateToken(username);
+            return ResponseEntity.ok(jwtService.generateToken(username));
         }else{
             throw new UsernameNotFoundException("Invalid request");
         }

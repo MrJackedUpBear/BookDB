@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'Classes.dart';
 import 'book_info.dart';
 import 'main.dart';
 import 'constants.dart';

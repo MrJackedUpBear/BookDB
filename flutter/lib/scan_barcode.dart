@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import 'Classes.dart';
 import 'add_book.dart';
 import 'book_info.dart';
 import 'main.dart';
