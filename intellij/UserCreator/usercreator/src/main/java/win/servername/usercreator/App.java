@@ -40,9 +40,14 @@ public class App {
       //Need to initialize the password and hash with some generic values...
       byte[] password = "$2y$12$tER3.LcLXZCOrIS/kGpDIuhXmHD56RQSxpJ234iAPdAIr9aQVv6vy".getBytes(StandardCharsets.UTF_8); //TempPass
       int numOwnedBooks = 0;
+
+      if (DB_PASSWORD == null || DB_USERNAME == null){
+          System.out.println("Error getting environment variables. Exiting...");
+          return;
+      }
       
       //Order should be (firstName, lastName, numOwnedBooks, password, username)
-      String sql = "INSERT INTO user (firstName, lastName, numOwnedBooks, password, username) VALUES (?, ?, ?, ?, ?);";
+      String sql = "INSERT INTO User (firstName, lastName, numOwnedBooks, password, username) VALUES (?, ?, ?, ?, ?);";
 
       try (Connection conn = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
           PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
@@ -89,7 +94,7 @@ public class App {
         roleId = 3;
       }
 
-      String sql = "INSERT INTO userrole VALUES (?, ?, ?, ?);";
+      String sql = "INSERT INTO UserRole VALUES (?, ?, ?, ?);";
 
       try (Connection conn = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
           PreparedStatement pstmt = conn.prepareStatement(sql)){
