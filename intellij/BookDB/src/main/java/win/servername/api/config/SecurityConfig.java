@@ -50,6 +50,8 @@ public class SecurityConfig {
                         .requestMatchers(API_MAPPING + "/elevateduser/**").hasAnyAuthority("Admin", "Elevated User")
                         .requestMatchers(API_MAPPING + "/admin/**").hasAuthority("Admin")
                         .requestMatchers(API_MAPPING + API_VERSION_CHECK).permitAll()
+                        .requestMatchers(API_MAPPING + "/login").permitAll()
+                        .requestMatchers(API_MAPPING + "/refresh").permitAll()
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
                 )

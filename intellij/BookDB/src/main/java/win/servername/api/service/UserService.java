@@ -23,6 +23,7 @@ import win.servername.entity.userDTO.PermissionDTO;
 import win.servername.entity.userDTO.RoleDTO;
 import win.servername.entity.userDTO.UserDTO;
 
+import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -67,6 +68,9 @@ public class UserService implements UserDetailsService {
         }
 
         User user = optionalUser.get();
+
+        System.out.println(new String(user.getPassword(), Charset.defaultCharset()));
+        System.out.println(new String(password, Charset.defaultCharset()));
 
         if (Arrays.equals(password, user.getPassword())){
             return SUCCESSFUL_LOGIN;
@@ -312,7 +316,7 @@ public class UserService implements UserDetailsService {
 
         List<RoleDTO> roleDTOS = getUserRoles(user);
 
-        Set<PermissionDTO> permissionDTOS = getUserPermissions(roleDTOS);
+        //Set<PermissionDTO> permissionDTOS = getUserPermissions(roleDTOS);
 
         for (RoleDTO role : roleDTOS){
             roles.add(role.getRoleName());

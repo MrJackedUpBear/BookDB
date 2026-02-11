@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 //Some constant variables to ensure easy and proper sizing and colors.
 const filterBoxSize = 250.0;
@@ -15,6 +16,9 @@ const menuButtonSize = Size(246, 53);
 
 //For internal server api access
 String _bookApiUrl = "";
+String _accessToken = "";
+
+final _storage = const FlutterSecureStorage();
 
 //Needed for future use. Will allow the change and getting of the API url.
 class Constants{
@@ -28,7 +32,6 @@ class Constants{
     final prefs = await SharedPreferences.getInstance();
 
     prefs.setString("Book API Url", apiUrl);
-    print("Setting book api string to: $apiUrl");
     _bookApiUrl = apiUrl;
   }
 
@@ -44,5 +47,41 @@ class Constants{
     }
 
     return _bookApiUrl;
+  }
+
+  Future<void> setAccessToken(String accessToken) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    prefs.setString("Access Token", accessToken);
+
+    _accessToken = accessToken;
+  }
+
+  Future<void> setRefreshToken(String refreshToken) async{
+    await _storage.write(key: "Refresh Token", value:refreshToken);
+  }
+
+  Future<String> getRefreshToken() async{
+    String? token = await _storage.read(key: "Refresh Token");
+
+    if(token == null){
+      return "";
+    }
+
+    return token;
+  }
+
+  Future<String> getAccessToken() async{
+    final prefs = await SharedPreferences.getInstance();
+
+    String? accessToken = prefs.getString("Access Token");
+
+    if (accessToken == null){
+      _accessToken = "";
+    }else{
+      _accessToken = accessToken;
+    }
+
+    return _accessToken;
   }
 }

@@ -19,11 +19,13 @@ Future<bool> login(String apiUrl, String username, String password) async {
   );
 
   if (resp.statusCode != 200){
-    print(resp.statusCode);
     return false;
   }
 
-  print(resp.body);
+  final Map<String, dynamic> data = jsonDecode(resp.body);
+
+  Constants().setAccessToken(data["AccessToken"]);
+  Constants().setRefreshToken(data["RefreshToken"]);
 
   return true;
 }

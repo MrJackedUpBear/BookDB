@@ -7,19 +7,20 @@ import win.servername.entity.auth.User;
 import win.servername.entity.permission.Role;
 import win.servername.entity.userDTO.UserDTO;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class UserInfoDetails implements UserDetails {
-    private String username;
-    private String password;
-    private List<GrantedAuthority> authorities;
+    private final String username;
+    private final String password;
+    private final List<GrantedAuthority> authorities;
 
     public UserInfoDetails(User user, List<String> roles){
         this.username = user.getUsername();
-        this.password = Arrays.toString(user.getPassword());
+        this.password = new String(user.getPassword(), StandardCharsets.UTF_8);
         this.authorities = roles.stream().map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
     }

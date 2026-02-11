@@ -38,7 +38,7 @@ public class App {
 
     static void addUserToTable(String username, String firstName, String lastName, String role){
       //Need to initialize the password and hash with some generic values...
-      byte[] password = "$2y$12$tER3.LcLXZCOrIS/kGpDIuhXmHD56RQSxpJ234iAPdAIr9aQVv6vy".getBytes(StandardCharsets.UTF_8); //TempPass
+      byte[] password = "$2a$12$eNBKkMzeaqFEzpDEqj3wB.Lv1k1T/Ya6l31flLzVG2o4DS7Ed/JPy".getBytes(StandardCharsets.UTF_8); //TempPass
       int numOwnedBooks = 0;
 
       if (DB_PASSWORD == null || DB_USERNAME == null){

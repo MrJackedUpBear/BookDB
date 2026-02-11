@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:book_db/setting.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'Classes.dart';
 import 'book_info.dart';
 import 'add_book.dart';
@@ -136,6 +137,33 @@ void addBook(Book b){
 
 //The actual homepage stuff
 class _MyHomePageState extends State<MyHomePage> {
+  @override
+  void initState(){
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      String apiUrl = await Constants().getBookApiUrl();
+
+      if (apiUrl.isEmpty && context.mounted){
+        _showURLForm(context);
+        return;
+      }
+
+      String accessToken = await Constants().getAccessToken();
+
+      if (accessToken.isEmpty && context.mounted){
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Please log in."),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+            )
+        );
+        _showURLForm(context, apiUrl);
+        return;
+      }
+    });
+  }
+
   //This list of colors keeps track of the different color of books on the main page. Allows for alternating between these three books.
   List<Color> bookColors = [Color(0xFF9C6644), Color(0xFF7F5539), Color(0xFFB08968)];
 
@@ -144,7 +172,7 @@ class _MyHomePageState extends State<MyHomePage> {
   static final TextEditingController _titleTextController = TextEditingController();
   static final TextEditingController _genreTextController = TextEditingController();
 
-  static final TextEditingController _apiUrlTextController = TextEditingController();
+  static TextEditingController _apiUrlTextController = TextEditingController();
   static final TextEditingController _usernameTextController = TextEditingController();
   static final TextEditingController _passwordTextController = TextEditingController();
 
@@ -427,7 +455,11 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _showURLForm(BuildContext context){
+  void _showURLForm(BuildContext context, [String apiUrl = ""]){
+    setState(() {
+      _apiUrlTextController = TextEditingController(text: apiUrl);
+    });
+
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -485,9 +517,25 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   ElevatedButton(
                     onPressed: () async {
-                      await _verifyLogin();
-                      if (context.mounted) {
+                      bool successfulLogin = await _verifyLogin();
+
+                      if (successfulLogin && context.mounted){
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Successful Login!"),
+                              backgroundColor: Colors.green,
+                              behavior: SnackBarBehavior.floating,
+                            )
+                        );
                         Navigator.pop(context);
+                      }else if (context.mounted){
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Invalid Login."),
+                              backgroundColor: Colors.red,
+                              behavior: SnackBarBehavior.floating,
+                            )
+                        );
                       }
                     },
                     child: Text("Submit"),
@@ -522,9 +570,9 @@ class _MyHomePageState extends State<MyHomePage> {
     return true;
   }
 
-  Future<void> _verifyLogin() async {
+  Future<bool> _verifyLogin() async {
     if (!await _verifyURL()){
-      return;
+      return false;
     }
 
     String apiUrl = _apiUrlTextController.text;
@@ -534,12 +582,11 @@ class _MyHomePageState extends State<MyHomePage> {
     //TODO: Verify username and password login with the valid URL.
     bool isValid = await login(apiUrl, username, password);
 
-    if (!isValid){
-      print("Invalid login");
-      return;
+    if (isValid){
+      Constants().setBookApiUrl(apiUrl);
     }
 
-    Constants().setBookApiUrl(apiUrl);
+    return isValid;
   }
 
   //This is the main build widget that contains all the main page display.
@@ -1162,12 +1209,6 @@ class _MyHomePageState extends State<MyHomePage> {
                     //Sets the style to the default button style and navigates to the add book page on click
                       style: defaultButtonStyle,
                       onPressed: () async {
-                        String apiUrl = await Constants().getBookApiUrl();
-                        if (apiUrl.isEmpty && context.mounted){
-                          _showURLForm(context);
-                          return;
-                        }
-
                         Navigator.of(context).pushNamedAndRemoveUntil(
                           '/AddBook',
                               (Route<dynamic> route) => false,
